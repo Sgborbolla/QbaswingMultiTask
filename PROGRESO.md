@@ -101,6 +101,15 @@ las capturas son para revisión humana.
 - **F9 Ajustes:** vista completa con guardado real; el tema claro/oscuro se
   cambia en caliente con `ThemeDictionaries` (las superficies cambian, los Azules
   de marca se mantienen).
+- **F10 Entrega:** `README.md`, `build.ps1`, `release.sh` y `empaquetar.ps1`; el
+  instalador ya no es un esqueleto: copia la aplicación, crea accesos directos,
+  se registra para desinstalarse y **se copia a sí mismo como `Desinstalar.exe`**
+  dentro de la carpeta de instalación (el plan §8.1 avisaba de que apuntar al exe
+  del ZIP dejaba la desinstalación rota). El ZIP final se arma en Descargas con
+  el código fuente, la aplicación autocontenida en `app\` y el instalador.
+  Honestidad: el ZIP no se ha podido probar en un Windows recién instalado (aquí
+  solo hay este equipo); sí se probó el instalador de punta a punta (instalar y
+  desinstalar) y se revisó el contenido del ZIP.
 
 **Errores encontrados y corregidos en esta parte:**
 | Dónde | Fallo | Corrección |
@@ -123,7 +132,7 @@ las capturas son para revisión humana.
 | F7 | Estadísticas reales + resumen + PDF + gráfica por día | **HECHO (GUI)** — tarjetas reales, tabla, gráfica vectorial por día, filtro, CSV/PDF |
 | F8 | Perfiles + horario + expresiones + índice automático | **HECHO (GUI)** — alta/edición/duplicar/borrar/exportar/importar y **aplicar al Copiar/Mover**; horario por hora/días o al insertar |
 | F9 | Ajustes: tema, letra, idioma, estructura, exclusiones | **HECHO (GUI)** — tema claro/oscuro real con `ThemeDictionaries`, letra, buffers, umbrales, exclusiones, idioma y guardado en JSON |
-| F10 | Cierre: README + ZIP completo + instalador | PENDIENTE |
+| F10 | Cierre: README + ZIP completo + instalador | **HECHO** — `README.md`, scripts `build.ps1`/`release.sh`/`empaquetar.ps1`, instalador autocontenido (instala, crea accesos directos, registra la desinstalación y se copia como `Desinstalar.exe`) y ZIP `QbaswingMultiTask-1.0.0.zip` (125,5 MB) en Descargas. Ciclo instalar → desinstalar probado sin dejar rastro |
 
 ## Decisiones que se apartan de `PLAN.md` a propósito
 

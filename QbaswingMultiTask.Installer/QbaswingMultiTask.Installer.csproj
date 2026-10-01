@@ -8,7 +8,14 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    <SelfContained>false</SelfContained>
+    <!-- Autocontenido y en un solo fichero: el instalador tiene que correr en un
+         Windows limpio, sin .NET instalado, y ser un unico .exe facil de meter
+         en el ZIP (PLAN.md F10). -->
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <InvariantGlobalization>true</InvariantGlobalization>
 
     <!-- PLAN.md seccion 6: el instalador se llama Instalar-QbaswingMultiTask.exe -->
     <AssemblyName>Instalar-QbaswingMultiTask</AssemblyName>

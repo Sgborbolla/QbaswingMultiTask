@@ -15,6 +15,7 @@ paquetes/
 
 # --- Entregables generados ---
 salida/
+dist/
 *.zip
 *.exe
 
