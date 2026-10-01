@@ -93,9 +93,9 @@ las capturas son para revisión humana.
   por día (controles, no imagen), tabla, filtro y CSV/PDF.
 - **F8 Perfiles:** alta/edición/duplicar/borrar/exportar/importar y **aplicar al
   Copiar/Mover** (origen, destinos, estructura, fechas).
-- **F9 Ajustes:** vista completa con guardado real y aplicación del tema al
-  arrancar. **Pendiente:** que el tema claro repinte (hoy los colores son fijos
-  en oscuro).
+- **F9 Ajustes:** vista completa con guardado real; el tema claro/oscuro se
+  cambia en caliente con `ThemeDictionaries` (las superficies cambian, los Azules
+  de marca se mantienen).
 
 **Errores encontrados y corregidos en esta parte:**
 | Dónde | Fallo | Corrección |
@@ -117,7 +117,7 @@ las capturas son para revisión humana.
 | F6 | Escáner en GUI: duplicados/faltantes/buscar + exportar + Ctrl+G | **HECHO (GUI)** — índice real, duplicados por hash, faltantes A→B, búsqueda, CSV/PDF |
 | F7 | Estadísticas reales + resumen + PDF + gráfica por día | **HECHO (GUI)** — tarjetas reales, tabla, gráfica vectorial por día, filtro, CSV/PDF |
 | F8 | Perfiles + horario + expresiones + índice automático | **HECHO (GUI)** — alta/edición/duplicar/borrar/exportar/importar y **aplicar al Copiar/Mover**; horario por hora/días o al insertar |
-| F9 | Ajustes: tema, letra, idioma, estructura, exclusiones | **PARCIAL** — vista completa y guardado real. El tema claro **aún no repinta** los colores (fijos en oscuro); falta `ThemeDictionaries` |
+| F9 | Ajustes: tema, letra, idioma, estructura, exclusiones | **HECHO (GUI)** — tema claro/oscuro real con `ThemeDictionaries`, letra, buffers, umbrales, exclusiones, idioma y guardado en JSON |
 | F10 | Cierre: README + ZIP completo + instalador | PENDIENTE |
 
 ## Decisiones que se apartan de `PLAN.md` a propósito

@@ -11,6 +11,13 @@
   -->
   <Application.Resources>
     <ResourceDictionary>
+      <!--
+        Los diez colores de la marca (PLAN.md §1). Van como recursos con nombre
+        para que el XAML los use con {DynamicResource ...}. Ademas, los colores
+        de superficie (fondos, bordes, texto) viven en ThemeDictionaries: asi el
+        tema claro y el oscuro comparten los Azules de marca y solo cambian las
+        superficies. El tema se cambia en caliente desde Ajustes (§2.7).
+      -->
       <Color x:Key="ColCeleste">#41A5F5</Color>
       <Color x:Key="ColAzul">#0E4FA6</Color>
       <Color x:Key="ColRojo">#C8102E</Color>
@@ -22,21 +29,42 @@
       <Color x:Key="ColOk">#2ECC71</Color>
       <Color x:Key="ColAviso">#F5B041</Color>
 
-      <SolidColorBrush x:Key="Celeste" Color="{StaticResource ColCeleste}" />
-      <SolidColorBrush x:Key="Azul" Color="{StaticResource ColAzul}" />
-      <SolidColorBrush x:Key="Rojo" Color="{StaticResource ColRojo}" />
-      <SolidColorBrush x:Key="Blanco" Color="{StaticResource ColBlanco}" />
-      <SolidColorBrush x:Key="Navy" Color="{StaticResource ColNavy}" />
-      <SolidColorBrush x:Key="Tarjeta" Color="{StaticResource ColTarjeta}" />
-      <SolidColorBrush x:Key="Borde" Color="{StaticResource ColBorde}" />
-      <SolidColorBrush x:Key="Silver" Color="{StaticResource ColSilver}" />
-      <SolidColorBrush x:Key="Ok" Color="{StaticResource ColOk}" />
-      <SolidColorBrush x:Key="Aviso" Color="{StaticResource ColAviso}" />
+      <ResourceDictionary.ThemeDictionaries>
 
-      <!-- Fondos derivados -->
-      <SolidColorBrush x:Key="Fondo" Color="{StaticResource ColNavy}" />
-      <SolidColorBrush x:Key="Panel" Color="{StaticResource ColTarjeta}" />
-      <SolidColorBrush x:Key="Hover" Color="#1D2E4C" />
+        <ResourceDictionary x:Key="Dark">
+          <SolidColorBrush x:Key="Celeste" Color="#41A5F5" />
+          <SolidColorBrush x:Key="Azul" Color="#0E4FA6" />
+          <SolidColorBrush x:Key="Rojo" Color="#C8102E" />
+          <SolidColorBrush x:Key="Blanco" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="Navy" Color="#0B1626" />
+          <SolidColorBrush x:Key="Tarjeta" Color="#15233B" />
+          <SolidColorBrush x:Key="Borde" Color="#243452" />
+          <SolidColorBrush x:Key="Silver" Color="#7A8AA6" />
+          <SolidColorBrush x:Key="Ok" Color="#2ECC71" />
+          <SolidColorBrush x:Key="Aviso" Color="#F5B041" />
+          <SolidColorBrush x:Key="Fondo" Color="#0B1626" />
+          <SolidColorBrush x:Key="Panel" Color="#15233B" />
+          <SolidColorBrush x:Key="Hover" Color="#1D2E4C" />
+        </ResourceDictionary>
+
+        <ResourceDictionary x:Key="Light">
+          <SolidColorBrush x:Key="Celeste" Color="#1E7FD1" />
+          <SolidColorBrush x:Key="Azul" Color="#0E4FA6" />
+          <SolidColorBrush x:Key="Rojo" Color="#C8102E" />
+          <!-- En claro, "Blanco" es el color de texto: tinta oscura. -->
+          <SolidColorBrush x:Key="Blanco" Color="#0B1626" />
+          <SolidColorBrush x:Key="Navy" Color="#E4E9F2" />
+          <SolidColorBrush x:Key="Tarjeta" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="Borde" Color="#CBD5E4" />
+          <SolidColorBrush x:Key="Silver" Color="#5B6B85" />
+          <SolidColorBrush x:Key="Ok" Color="#1E9E57" />
+          <SolidColorBrush x:Key="Aviso" Color="#B9770E" />
+          <SolidColorBrush x:Key="Fondo" Color="#F4F6FA" />
+          <SolidColorBrush x:Key="Panel" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="Hover" Color="#E8EEF8" />
+        </ResourceDictionary>
+
+      </ResourceDictionary.ThemeDictionaries>
     </ResourceDictionary>
   </Application.Resources>
 
@@ -87,6 +115,7 @@
     <Style Selector="Button.principal">
       <Setter Property="Background" Value="{DynamicResource Azul}" />
       <Setter Property="BorderBrush" Value="{DynamicResource Celeste}" />
+      <Setter Property="Foreground" Value="#FFFFFF" />
       <Setter Property="FontWeight" Value="Bold" />
     </Style>
     <Style Selector="Button.mini">

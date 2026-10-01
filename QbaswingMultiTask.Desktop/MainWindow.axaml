@@ -51,6 +51,7 @@
     <Style Selector="Button.principal">
       <Setter Property="Background" Value="{DynamicResource Azul}" />
       <Setter Property="BorderBrush" Value="{DynamicResource Celeste}" />
+      <Setter Property="Foreground" Value="#FFFFFF" />
       <Setter Property="FontWeight" Value="Bold" />
     </Style>
     <Style Selector="Button:disabled">
