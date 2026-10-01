@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- PLAN.md 8.1: OutputType Exe, NO WinExe. Con WinExe el instalador
+         abria una ventana en blanco sin decir nada, porque escribe en consola. -->
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>false</SelfContained>
+
+    <!-- PLAN.md seccion 6: el instalador se llama Instalar-QbaswingMultiTask.exe -->
+    <AssemblyName>Instalar-QbaswingMultiTask</AssemblyName>
+    <RootNamespace>QbaswingMultiTask.Installer</RootNamespace>
+    <ApplicationIcon>Assets\logo-qbaswing.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- La musica va incrustada en el binario, no suelta al lado: el instalador
+         tiene que poder instalarla sin depender de la red ni del ZIP. -->
+    <EmbeddedResource Include="Assets\install-musica.m4a" LogicalName="musica.m4a" />
+  </ItemGroup>
+
+</Project>

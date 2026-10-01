@@ -1,0 +1,29 @@
+<Project>
+
+  <!--
+    Propiedades comunes a los 5 proyectos. PLAN.md 8.3 senala que la version
+    estaba escrita en 5 sitios distintos; aqui esta en uno solo, asi que cambiar
+    la version es cambiar una linea.
+  -->
+  <PropertyGroup>
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <InformationalVersion>1.0.0</InformationalVersion>
+
+    <Product>QbaswingMultiTask</Product>
+    <Company>QBasWinG</Company>
+    <Authors>QBasWinG · Freeman y Disenos</Authors>
+    <Copyright>© 2026 QBasWinG</Copyright>
+    <Description>Copiador de paquetes y USB. Copia a varios destinos, sincroniza, escanea y divide.</Description>
+
+    <LangVersion>latest</LangVersion>
+    <NeutralLanguage>es</NeutralLanguage>
+    <InvariantGlobalization>false</InvariantGlobalization>
+
+    <!-- Sin avisos de NU1903 heredados: son de la rama de Linux (Tmds.DBus.Protocol)
+         y aqui solo se compila Windows, pero el aviso sale igual. -->
+    <NoWarn>$(NoWarn);NU1903</NoWarn>
+  </PropertyGroup>
+
+</Project>

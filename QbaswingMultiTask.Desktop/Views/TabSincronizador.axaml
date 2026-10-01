@@ -1,0 +1,190 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:QbaswingMultiTask.Desktop"
+             x:Class="QbaswingMultiTask.Desktop.Views.TabSincronizador"
+             x:DataType="vm:SincronizadorViewModel">
+
+  <!-- PLAN.md §2.2: dos paneles iguales tipo Total Commander, mini-discos
+       arriba, arbol expandible, marcas ✓/●/= y teclas del M2. -->
+  <Grid RowDefinitions="*,Auto,Auto" Margin="10">
+
+    <Grid Grid.Row="0" ColumnDefinitions="*,*,*">
+      <!-- ================= PANEL IZQUIERDO ================= -->
+      <Border Grid.Column="0" Background="{DynamicResource Panel}"
+              BorderBrush="{DynamicResource Borde}" BorderThickness="1"
+              CornerRadius="10" Margin="0,0,6,0">
+        <Grid RowDefinitions="Auto,Auto,Auto,*">
+          <TextBlock Grid.Row="0" Classes="titulo" Text="PANEL IZQUIERDO · maestro"
+                     Margin="12,9,12,5" />
+
+          <ItemsControl Grid.Row="1" Margin="10,0,10,6" ItemsSource="{Binding Discos}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Button Classes="mini" Content="{Binding DriveLetter}"
+                        ToolTip.Tip="{Binding Display}" Click="OnDiscoIzq" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <Border Grid.Row="2" Margin="10,0,10,6" Background="{DynamicResource Navy}"
+                  BorderBrush="{DynamicResource Borde}" BorderThickness="1"
+                  CornerRadius="6" Padding="8,5">
+            <TextBlock Text="{Binding Izquierda}" FontSize="11"
+                       TextTrimming="CharacterEllipsis"
+                       Foreground="{DynamicResource Celeste}" />
+          </Border>
+
+          <TreeView Grid.Row="3" Margin="4,0,4,8" Background="Transparent"
+                    BorderThickness="0" ItemsSource="{Binding ArbolIzquierda}">
+            <TreeView.ItemContainerTheme>
+              <ControlTheme TargetType="TreeViewItem"
+                            BasedOn="{StaticResource {x:Type TreeViewItem}}"
+                            x:CompileBindings="False">
+                <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+              </ControlTheme>
+            </TreeView.ItemContainerTheme>
+            <TreeView.ItemTemplate>
+              <TreeDataTemplate ItemsSource="{Binding Children}">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <TextBlock Text="{Binding Glyph}" FontSize="11"
+                             Foreground="{DynamicResource Celeste}" />
+                  <TextBlock Text="{Binding Name}" FontSize="11" MaxWidth="180"
+                             TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+              </TreeDataTemplate>
+            </TreeView.ItemTemplate>
+          </TreeView>
+        </Grid>
+      </Border>
+
+      <!-- ================= PANEL DERECHO ================= -->
+      <Border Grid.Column="1" Background="{DynamicResource Panel}"
+              BorderBrush="{DynamicResource Borde}" BorderThickness="1"
+              CornerRadius="10" Margin="0,0,6,0">
+        <Grid RowDefinitions="Auto,Auto,Auto,*">
+          <TextBlock Grid.Row="0" Classes="titulo" Text="PANEL DERECHO · entrante"
+                     Margin="12,9,12,5" />
+
+          <ItemsControl Grid.Row="1" Margin="10,0,10,6" ItemsSource="{Binding Discos}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Button Classes="mini" Content="{Binding DriveLetter}"
+                        ToolTip.Tip="{Binding Display}" Click="OnDiscoDer" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <Border Grid.Row="2" Margin="10,0,10,6" Background="{DynamicResource Navy}"
+                  BorderBrush="{DynamicResource Borde}" BorderThickness="1"
+                  CornerRadius="6" Padding="8,5">
+            <TextBlock Text="{Binding Derecha}" FontSize="11"
+                       TextTrimming="CharacterEllipsis"
+                       Foreground="{DynamicResource Celeste}" />
+          </Border>
+
+          <TreeView Grid.Row="3" Margin="4,0,4,8" Background="Transparent"
+                    BorderThickness="0" ItemsSource="{Binding ArbolDerecha}">
+            <TreeView.ItemContainerTheme>
+              <ControlTheme TargetType="TreeViewItem"
+                            BasedOn="{StaticResource {x:Type TreeViewItem}}"
+                            x:CompileBindings="False">
+                <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+              </ControlTheme>
+            </TreeView.ItemContainerTheme>
+            <TreeView.ItemTemplate>
+              <TreeDataTemplate ItemsSource="{Binding Children}">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <TextBlock Text="{Binding Glyph}" FontSize="11"
+                             Foreground="{DynamicResource Celeste}" />
+                  <TextBlock Text="{Binding Name}" FontSize="11" MaxWidth="180"
+                             TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+              </TreeDataTemplate>
+            </TreeView.ItemTemplate>
+          </TreeView>
+        </Grid>
+      </Border>
+
+      <!-- ================= RESULTADO ================= -->
+      <Border Grid.Column="2" Background="{DynamicResource Panel}"
+              BorderBrush="{DynamicResource Borde}" BorderThickness="1"
+              CornerRadius="10">
+        <Grid RowDefinitions="Auto,Auto,*">
+          <TextBlock Grid.Row="0" Classes="titulo" Text="COMPARACION" Margin="12,9,12,5" />
+          <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="14" Margin="12,0,12,6">
+            <TextBlock Classes="pista">
+              <Run Text="✓ ya lo tienes " /><Run Text="{Binding IgualesTexto}" /></TextBlock>
+            <TextBlock Classes="pista">
+              <Run Text="● nuevos " /><Run Text="{Binding NuevosTexto}" /></TextBlock>
+            <TextBlock Classes="pista">
+              <Run Text="= repetidos " /><Run Text="{Binding RepetidosTexto}" /></TextBlock>
+          </StackPanel>
+
+          <ScrollViewer Grid.Row="2">
+            <ItemsControl Margin="8,0,8,8" ItemsSource="{Binding Filas}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <Grid ColumnDefinitions="Auto,*,Auto" Margin="4,1">
+                    <TextBlock Grid.Column="0" Text="{Binding Marca}" FontSize="12"
+                               Width="18" Foreground="{DynamicResource Celeste}" />
+                    <TextBlock Grid.Column="1" Text="{Binding Nombre}" FontSize="11"
+                               TextTrimming="CharacterEllipsis" />
+                    <TextBlock Grid.Column="2" Text="{Binding TamTexto}" FontSize="10"
+                               Foreground="{DynamicResource Silver}" />
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+        </Grid>
+      </Border>
+    </Grid>
+
+    <!-- ================= BARRA DE ACCIONES ================= -->
+    <Border Grid.Row="1" Background="{DynamicResource Panel}" Padding="14,9" Margin="0,8,0,0">
+      <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,*,Auto">
+        <TextBlock Grid.Column="0" Text="Umbral" FontSize="11"
+                   VerticalAlignment="Center" Margin="0,0,6,0" />
+        <Slider Grid.Column="1" Width="130" Minimum="30" Maximum="100"
+                Value="{Binding Umbral}" VerticalAlignment="Center" />
+        <TextBlock Grid.Column="2" Text="{Binding UmbralTexto}" FontSize="11"
+                   VerticalAlignment="Center" Margin="8,0,16,0"
+                   Foreground="{DynamicResource Silver}" />
+
+        <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="6"
+                    VerticalAlignment="Center">
+          <Button Classes="chico" Content="≡ Alinear" Command="{Binding AlinearCommand}"
+                  ToolTip.Tip="Volver a emparejar por nombre (Ctrl+A)" />
+          <Button Classes="chico" Content="∿ Desalinear" Command="{Binding DesalinearCommand}"
+                  ToolTip.Tip="Todo lo de la derecha cuenta como nuevo (Ctrl+U)" />
+          <Button Classes="chico" Content="∑ Revisar" Command="{Binding RevisarCommand}"
+                  ToolTip.Tip="Comparar y contar que falta (Ctrl+S)" />
+        </StackPanel>
+
+        <TextBlock Grid.Column="4" Text="{Binding Vista}" FontSize="11"
+                   Margin="14,0" VerticalAlignment="Center"
+                   Foreground="{DynamicResource Celeste}"
+                   TextTrimming="CharacterEllipsis" />
+
+        <Button Grid.Column="5" Classes="chico principal" Content="▶ Aplicar"
+                Command="{Binding AplicarCommand}"
+                ToolTip.Tip="Copiar los nuevos del entrante al maestro (Entrar)" />
+      </Grid>
+    </Border>
+
+    <Grid Grid.Row="2" ColumnDefinitions="*,Auto" Margin="4,6,4,0">
+      <ProgressBar Grid.Column="0" Height="6" Minimum="0" Maximum="100"
+                   Value="{Binding Progreso}" Foreground="{DynamicResource Celeste}"
+                   Background="{DynamicResource Navy}" />
+      <TextBlock Grid.Column="1" Text="{Binding Estado}" FontSize="10"
+                 Margin="10,0,0,0" Foreground="{DynamicResource Silver}"
+                 TextTrimming="CharacterEllipsis" />
+    </Grid>
+  </Grid>
+</UserControl>

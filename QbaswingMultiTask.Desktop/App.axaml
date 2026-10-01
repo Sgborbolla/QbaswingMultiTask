@@ -1,0 +1,121 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="QbaswingMultiTask.Desktop.App"
+             RequestedThemeVariant="Dark">
+
+  <!--
+    Los ocho colores de la paleta bandera (PLAN.md seccion 1). Van como recursos
+    con nombre para que el XAML los use con {DynamicResource ...} y no se
+    escriban a mano en cada vista. Sin este diccionario todos los DynamicResource
+    resuelven null y la ventana se ve sin los colores de la marca.
+  -->
+  <Application.Resources>
+    <ResourceDictionary>
+      <Color x:Key="ColCeleste">#41A5F5</Color>
+      <Color x:Key="ColAzul">#0E4FA6</Color>
+      <Color x:Key="ColRojo">#C8102E</Color>
+      <Color x:Key="ColBlanco">#FFFFFF</Color>
+      <Color x:Key="ColNavy">#0B1626</Color>
+      <Color x:Key="ColTarjeta">#15233B</Color>
+      <Color x:Key="ColBorde">#243452</Color>
+      <Color x:Key="ColSilver">#7A8AA6</Color>
+      <Color x:Key="ColOk">#2ECC71</Color>
+      <Color x:Key="ColAviso">#F5B041</Color>
+
+      <SolidColorBrush x:Key="Celeste" Color="{StaticResource ColCeleste}" />
+      <SolidColorBrush x:Key="Azul" Color="{StaticResource ColAzul}" />
+      <SolidColorBrush x:Key="Rojo" Color="{StaticResource ColRojo}" />
+      <SolidColorBrush x:Key="Blanco" Color="{StaticResource ColBlanco}" />
+      <SolidColorBrush x:Key="Navy" Color="{StaticResource ColNavy}" />
+      <SolidColorBrush x:Key="Tarjeta" Color="{StaticResource ColTarjeta}" />
+      <SolidColorBrush x:Key="Borde" Color="{StaticResource ColBorde}" />
+      <SolidColorBrush x:Key="Silver" Color="{StaticResource ColSilver}" />
+      <SolidColorBrush x:Key="Ok" Color="{StaticResource ColOk}" />
+      <SolidColorBrush x:Key="Aviso" Color="{StaticResource ColAviso}" />
+
+      <!-- Fondos derivados -->
+      <SolidColorBrush x:Key="Fondo" Color="{StaticResource ColNavy}" />
+      <SolidColorBrush x:Key="Panel" Color="{StaticResource ColTarjeta}" />
+      <SolidColorBrush x:Key="Hover" Color="#1D2E4C" />
+    </ResourceDictionary>
+  </Application.Resources>
+
+  <Application.Styles>
+    <FluentTheme />
+
+    <!-- El tema oscuro por defecto, con la fuente de la marca. -->
+    <Style Selector="Window">
+      <Setter Property="Background" Value="{DynamicResource Fondo}" />
+      <Setter Property="FontFamily" Value="Inter" />
+      <Setter Property="Foreground" Value="{DynamicResource Blanco}" />
+    </Style>
+
+    <Style Selector="TextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource Blanco}" />
+    </Style>
+
+    <Style Selector="Button">
+      <Setter Property="Background" Value="{DynamicResource Panel}" />
+      <Setter Property="Foreground" Value="{DynamicResource Blanco}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource Borde}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Padding" Value="14,7" />
+      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <Style Selector="Button:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource Hover}" />
+    </Style>
+
+    <Style Selector="TextBox">
+      <Setter Property="Background" Value="{DynamicResource Panel}" />
+      <Setter Property="Foreground" Value="{DynamicResource Blanco}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource Borde}" />
+    </Style>
+
+    <!-- Estilos compartidos por todas las pestanas (los UserControl no heredan
+         los estilos de la ventana, asi que los comunes viven aqui). -->
+    <Style Selector="Button.chico">
+      <Setter Property="Padding" Value="9,4" />
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="CornerRadius" Value="5" />
+      <Setter Property="MinHeight" Value="24" />
+    </Style>
+    <Style Selector="Button.chico:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource Hover}" />
+    </Style>
+    <Style Selector="Button.principal">
+      <Setter Property="Background" Value="{DynamicResource Azul}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource Celeste}" />
+      <Setter Property="FontWeight" Value="Bold" />
+    </Style>
+    <Style Selector="Button.mini">
+      <Setter Property="Padding" Value="6,2" />
+      <Setter Property="FontSize" Value="10" />
+      <Setter Property="CornerRadius" Value="4" />
+      <Setter Property="MinHeight" Value="20" />
+      <Setter Property="Margin" Value="0,0,4,3" />
+    </Style>
+    <Style Selector="Button:disabled">
+      <Setter Property="Opacity" Value="0.4" />
+      <Setter Property="Cursor" Value="Arrow" />
+    </Style>
+    <Style Selector="RadioButton">
+      <Setter Property="Foreground" Value="{DynamicResource Silver}" />
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="Margin" Value="0,0,8,0" />
+    </Style>
+    <Style Selector="RadioButton:checked /template/ ContentPresenter">
+      <Setter Property="TextBlock.Foreground" Value="{DynamicResource Celeste}" />
+    </Style>
+    <Style Selector="TextBlock.titulo">
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="FontWeight" Value="Bold" />
+      <Setter Property="Foreground" Value="{DynamicResource Celeste}" />
+    </Style>
+    <Style Selector="TextBlock.pista">
+      <Setter Property="FontSize" Value="10" />
+      <Setter Property="Foreground" Value="{DynamicResource Silver}" />
+    </Style>
+  </Application.Styles>
+</Application>

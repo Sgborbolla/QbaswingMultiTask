@@ -1,0 +1,384 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:QbaswingMultiTask.Desktop"
+        xmlns:views="using:QbaswingMultiTask.Desktop.Views"
+        x:Class="QbaswingMultiTask.Desktop.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Title="QbaswingMultiTask"
+        Width="1240" Height="820"
+        MinWidth="1000" MinHeight="640"
+        Background="{DynamicResource Fondo}">
+
+  <Window.Styles>
+    <!-- Rectangulo de dispositivo: GRANDE, dos por fila, en vertical. -->
+    <Style Selector="Border.disco">
+      <Setter Property="Background" Value="{DynamicResource Tarjeta}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource Borde}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="12" />
+      <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <!-- Marcado como destino: borde AZUL de 2 px (§1). -->
+    <Style Selector="Border.disco.marcado">
+      <Setter Property="BorderBrush" Value="{DynamicResource Azul}" />
+      <Setter Property="BorderThickness" Value="2" />
+    </Style>
+    <!-- Grabando: borde CELESTE (§1). -->
+    <Style Selector="Border.disco.copiando">
+      <Setter Property="BorderBrush" Value="{DynamicResource Celeste}" />
+      <Setter Property="BorderThickness" Value="2" />
+    </Style>
+    <!-- Con error: borde ROJO (§1). -->
+    <Style Selector="Border.disco.error">
+      <Setter Property="BorderBrush" Value="{DynamicResource Rojo}" />
+      <Setter Property="BorderThickness" Value="2" />
+    </Style>
+    <Style Selector="Border.disco:pointerover">
+      <Setter Property="Background" Value="{DynamicResource Hover}" />
+    </Style>
+
+    <!-- Botones pequenos de la franja y de la botonera, con su funcion escrita
+         dentro. El autor los pidio pequenos y que no ocupen espacio. -->
+    <Style Selector="Button.chico">
+      <Setter Property="Padding" Value="9,4" />
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="CornerRadius" Value="5" />
+      <Setter Property="MinHeight" Value="24" />
+    </Style>
+    <Style Selector="Button.chico:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource Hover}" />
+    </Style>
+    <Style Selector="Button.principal">
+      <Setter Property="Background" Value="{DynamicResource Azul}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource Celeste}" />
+      <Setter Property="FontWeight" Value="Bold" />
+    </Style>
+    <Style Selector="Button:disabled">
+      <Setter Property="Opacity" Value="0.4" />
+      <Setter Property="Cursor" Value="Arrow" />
+    </Style>
+
+    <Style Selector="RadioButton">
+      <Setter Property="Foreground" Value="{DynamicResource Silver}" />
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="Margin" Value="0,0,8,0" />
+    </Style>
+    <Style Selector="RadioButton:checked /template/ ContentPresenter">
+      <Setter Property="TextBlock.Foreground" Value="{DynamicResource Celeste}" />
+    </Style>
+
+    <!-- Pestanas (§2): la activa en CELESTE sobre AZUL, las demas en SILVER. -->
+    <Style Selector="TabControl">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Padding" Value="0" />
+    </Style>
+    <Style Selector="TabItem">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Padding" Value="14,6" />
+      <Setter Property="MinHeight" Value="30" />
+      <Setter Property="Foreground" Value="{DynamicResource Silver}" />
+    </Style>
+    <Style Selector="TabItem:selected">
+      <Setter Property="Foreground" Value="{DynamicResource Blanco}" />
+      <Setter Property="FontWeight" Value="Bold" />
+    </Style>
+    <Style Selector="TabItem:selected /template/ Border#PART_SelectedPipe">
+      <Setter Property="Background" Value="{DynamicResource Celeste}" />
+    </Style>
+  </Window.Styles>
+
+  <TabControl x:Name="Pestanas">
+    <TabItem Header="Copiar/Mover">
+  <Grid RowDefinitions="Auto,*,Auto">
+
+    <!-- ENCABEZADO: botonera de PLAN.md 2.1 -->
+    <Border Grid.Row="0" Background="{DynamicResource Panel}" Padding="14,8">
+      <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+        <Border Grid.Column="0" Width="38" Height="38" CornerRadius="8"
+                Background="{DynamicResource Navy}" VerticalAlignment="Center">
+          <TextBlock Text="Q" Foreground="{DynamicResource Celeste}"
+                     FontSize="21" FontWeight="Bold"
+                     HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </Border>
+
+        <StackPanel Grid.Column="1" Margin="10,0,16,0" VerticalAlignment="Center" Spacing="0">
+          <TextBlock Text="QbaswingMultiTask" FontSize="16" FontWeight="Bold" />
+          <TextBlock Text="{Binding OrigenTexto}" FontSize="10"
+                     Foreground="{DynamicResource Silver}" MaxWidth="230"
+                     TextTrimming="CharacterEllipsis"
+                     ToolTip.Tip="{Binding OrigenTexto}" />
+        </StackPanel>
+
+        <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="6"
+                    VerticalAlignment="Center">
+          <Button Classes="chico" Content="Lector primero" Click="OnLectorPrimero"
+                  ToolTip.Tip="Copia primero a la unidad del lector" />
+          <Button Classes="chico" Content="Todo" Click="OnTodo"
+                  ToolTip.Tip="Marcar todos los destinos" />
+          <Button Classes="chico" Content="Externos" Click="OnExternos"
+                  ToolTip.Tip="Marcar solo USB, memorias y red" />
+          <Button Classes="chico" Content="Insertar" Click="OnInsertar"
+                  ToolTip.Tip="Insertar una unidad nueva de destino" />
+          <Button Classes="chico" Content="Expulsar" Click="OnExpulsar"
+                  ToolTip.Tip="Expulsar con seguridad la unidad marcada" />
+          <Button Classes="chico" Content="&#8635;" Command="{Binding RefrescarCommand}"
+                  ToolTip.Tip="Releer los dispositivos (Ctrl+R)" />
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!-- CUERPO -->
+    <Grid Grid.Row="1" Margin="12,10,12,0" ColumnDefinitions="1.05*,1.35*">
+
+      <!-- IZQUIERDA: Explorador de Windows, angosto (§2.1) -->
+      <Border Grid.Column="0" Background="{DynamicResource Panel}"
+              BorderBrush="{DynamicResource Borde}" BorderThickness="1"
+              CornerRadius="10" Margin="0,0,10,0">
+        <Grid RowDefinitions="Auto,Auto,*">
+          <TextBlock Grid.Row="0" Text="EXPLORADOR" Margin="12,9,12,5"
+                     FontSize="11" FontWeight="Bold"
+                     Foreground="{DynamicResource Celeste}" />
+
+          <Border Grid.Row="1" Margin="10,0,10,7" Background="{DynamicResource Navy}"
+                  BorderBrush="{DynamicResource Borde}" BorderThickness="1" CornerRadius="6"
+                  Padding="8,5">
+            <StackPanel>
+              <TextBlock Text="Origen" FontSize="9"
+                         Foreground="{DynamicResource Silver}" />
+              <TextBlock Text="{Binding OrigenTexto}" FontSize="11"
+                         TextTrimming="CharacterEllipsis"
+                         ToolTip.Tip="{Binding OrigenTexto}" />
+            </StackPanel>
+          </Border>
+
+          <TreeView Grid.Row="2" Margin="4,0,4,8" Background="Transparent"
+                    BorderThickness="0"
+                    ItemsSource="{Binding Explorador.Children}"
+                    SelectedItem="{Binding Origen}">
+
+            <!-- En Avalonia 11 no existe TreeViewItem.ExpandingEvent: el
+                 desplegado se enlaza con un ItemContainerTheme. Ese binding va
+                 contra el dato del nodo, no contra la ventana, asi que se
+                 desactiva ahi el modo compilado (x:CompileBindings). -->
+            <TreeView.ItemContainerTheme>
+              <ControlTheme TargetType="TreeViewItem"
+                            BasedOn="{StaticResource {x:Type TreeViewItem}}"
+                            x:CompileBindings="False">
+                <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+              </ControlTheme>
+            </TreeView.ItemContainerTheme>
+
+            <TreeView.ItemTemplate>
+              <TreeDataTemplate ItemsSource="{Binding Children}">
+                <StackPanel Orientation="Horizontal" Spacing="6"
+                            IsVisible="{Binding !EsProvisional}">
+                  <TextBlock Text="{Binding Glyph}" FontSize="11"
+                             Foreground="{DynamicResource Celeste}" />
+                  <TextBlock Text="{Binding Name}" FontSize="11" MaxWidth="170"
+                             TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+              </TreeDataTemplate>
+            </TreeView.ItemTemplate>
+          </TreeView>
+        </Grid>
+      </Border>
+
+      <!-- DERECHA: rectangulos grandes de dispositivo, dos por fila -->
+      <Border Grid.Column="1" Background="{DynamicResource Panel}"
+              BorderBrush="{DynamicResource Borde}" BorderThickness="1" CornerRadius="10">
+        <Grid RowDefinitions="Auto,Auto,*">
+
+          <Grid Grid.Row="0" Margin="12,8,12,4" ColumnDefinitions="*,Auto">
+            <TextBlock Grid.Column="0" Text="DESTINOS" FontSize="11" FontWeight="Bold"
+                       Foreground="{DynamicResource Celeste}" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="1" Text="{Binding ResumenDispositivos}" FontSize="10"
+                       Foreground="{DynamicResource Silver}" VerticalAlignment="Center" />
+          </Grid>
+
+          <!-- Fila de estructura y fechas (§2.1) -->
+          <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="12,0,12,8" Spacing="4">
+            <TextBlock Text="Estructura" FontSize="11" Foreground="{DynamicResource Silver}"
+                       VerticalAlignment="Center" Margin="0,0,6,0" />
+            <RadioButton GroupName="estr" Content="auto" IsChecked="{Binding EsAuto, Mode=TwoWay}" />
+            <RadioButton GroupName="estr" Content="● HDD" IsChecked="{Binding EsHdd, Mode=TwoWay}" />
+            <RadioButton GroupName="estr" Content="○ FLASH" IsChecked="{Binding EsFlash, Mode=TwoWay}" />
+            <TextBlock Text="Fecha" FontSize="11" Foreground="{DynamicResource Silver}"
+                       VerticalAlignment="Center" Margin="12,0,6,0" />
+            <TextBox Width="82" Watermark="__/__/____" FontSize="11"
+                     Text="{Binding FechaDesde, Converter={x:Static vm:Fechas.Txt}, Mode=TwoWay}" />
+            <TextBlock Text="→" Foreground="{DynamicResource Silver}"
+                       VerticalAlignment="Center" Margin="4,0" />
+            <TextBox Width="82" Watermark="__/__/____" FontSize="11"
+                     Text="{Binding FechaHasta, Converter={x:Static vm:Fechas.Txt}, Mode=TwoWay}" />
+            <Button Classes="chico" Content="Filtro" Click="OnFiltro"
+                    ToolTip.Tip="Solo copiar lo que este entre esas dos fechas" />
+          </StackPanel>
+
+          <!-- Los rectangulos -->
+          <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Margin="10,0,10,10">
+            <ItemsControl ItemsSource="{Binding Devices}">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <!-- Ancho de hueco fijo: obliga a DOS por fila y deja el
+                       rectangulo en vertical. Decision deliberada del autor,
+                       el boceto de §2.1 dibuja cuatro. -->
+                  <WrapPanel ItemWidth="252" Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+
+              <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="vm:DeviceViewModel">
+                  <Border Classes="disco"
+                          Classes.marcado="{Binding Marked}"
+                          Classes.copiando="{Binding CopyActive}"
+                          Classes.error="{Binding HasError}"
+                          Width="242" Height="258" Margin="0,0,10,10"
+                          Padding="12"
+                          PointerPressed="OnDiscoPressed">
+                    <Border.ContextMenu>
+                      <ContextMenu>
+                        <MenuItem Header="Marcar / desmarcar destino" Click="OnMenuMarcar" />
+                        <MenuItem Header="Ver contenido" Click="OnMenuContenido" />
+                        <Separator />
+                        <MenuItem Header="Expulsar con seguridad" Click="OnMenuExpulsar" />
+                        <MenuItem Header="Formatear…" Click="OnMenuFormatear" />
+                      </ContextMenu>
+                    </Border.ContextMenu>
+                    <Grid RowDefinitions="Auto,*,Auto">
+
+                      <!-- Cabecera: recuadro grande + casilla ☑ de §1 -->
+                      <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
+                        <Border Grid.Column="0" Width="48" Height="48" CornerRadius="10"
+                                Background="{DynamicResource Navy}" VerticalAlignment="Center">
+                          <TextBlock Text="{Binding Cabecera}" FontSize="20" FontWeight="Bold"
+                                     Foreground="{DynamicResource Celeste}"
+                                     HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <Border Grid.Column="1" Width="28" Height="28" CornerRadius="6"
+                                Background="{DynamicResource Navy}"
+                                BorderBrush="{DynamicResource Celeste}" BorderThickness="2"
+                                VerticalAlignment="Center">
+                          <TextBlock Text="{Binding MarkGlyph}" FontSize="15" FontWeight="Bold"
+                                     Foreground="{DynamicResource Celeste}"
+                                     HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                      </Grid>
+
+                      <!-- Datos y barras -->
+                      <StackPanel Grid.Row="1" VerticalAlignment="Center" Spacing="4">
+                        <TextBlock Text="{Binding Label}" FontSize="15" FontWeight="Bold"
+                                   TextTrimming="CharacterEllipsis" />
+                        <TextBlock Text="{Binding SubLabel}" FontSize="11"
+                                   Foreground="{DynamicResource Silver}"
+                                   TextTrimming="CharacterEllipsis" />
+                        <!-- "238 GB–24%": tamano real y ocupacion real (§2.1) -->
+                        <TextBlock Text="{Binding SizeText}" FontSize="10" FontWeight="Bold"
+                                   Foreground="{DynamicResource Celeste}" />
+                        <!-- Datos fisicos (F2): bus, SSD/mecanico, marca y modelo -->
+                        <TextBlock Text="{Binding Fisico}" FontSize="9"
+                                   Foreground="{DynamicResource Silver}"
+                                   TextTrimming="CharacterEllipsis"
+                                   IsVisible="{Binding TieneFisico}"
+                                   ToolTip.Tip="{Binding Fisico}" />
+
+                        <!-- Capacidad: relleno AZUL sobre NAVY, siempre quieta (§1) -->
+                        <Border Height="7" Margin="0,8,0,2" CornerRadius="4"
+                                Background="{DynamicResource Navy}">
+                          <Border HorizontalAlignment="Left" CornerRadius="4"
+                                  Background="{DynamicResource Azul}"
+                                  Width="{Binding UsedPercent, Converter={x:Static vm:Pct.Width}}" />
+                        </Border>
+
+                        <!-- Copia de ESTA unidad: carril NAVY, relleno CELESTE -->
+                        <Border Height="7" CornerRadius="4" Background="{DynamicResource Navy}">
+                          <Grid>
+                            <Border HorizontalAlignment="Left" CornerRadius="4"
+                                    Background="{DynamicResource Celeste}"
+                                    Width="{Binding CopyPercent, Converter={x:Static vm:Pct.Width}}" />
+                            <!-- Filete ROJO al terminar: 100 % legible sin leer (§1) -->
+                            <Border HorizontalAlignment="Right" Width="3" Height="7"
+                                    Background="{DynamicResource Rojo}" CornerRadius="1"
+                                    IsVisible="{Binding CopyActive}" />
+                          </Grid>
+                        </Border>
+                      </StackPanel>
+
+                      <TextBlock Grid.Row="2" Text="{Binding CopyText}" FontSize="11"
+                                 Foreground="{DynamicResource Silver}"
+                                 HorizontalAlignment="Center" VerticalAlignment="Bottom" />
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+        </Grid>
+      </Border>
+    </Grid>
+
+    <!-- FRANJA DE ABAJO: compacta. Todo en dos lineas, como en §2.1. -->
+    <Border Grid.Row="2" Background="{DynamicResource Panel}" Padding="14,7" Margin="12,8,12,10">
+      <Grid RowDefinitions="Auto,Auto">
+
+        <!-- Linea 1: destinos marcados y botones. Cada boton lleva su funcion
+             escrita dentro, y son pequenos para que no ocupen espacio. -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto">
+          <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6"
+                      VerticalAlignment="Center">
+            <TextBlock Text="Destinos ☑" FontSize="11"
+                       Foreground="{DynamicResource Silver}" VerticalAlignment="Center" />
+            <TextBlock Text="{Binding DestinosText}" FontSize="12" FontWeight="Bold"
+                       VerticalAlignment="Center" MaxWidth="260"
+                       TextTrimming="CharacterEllipsis" />
+          </StackPanel>
+
+          <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="5">
+            <Button Classes="chico principal" Content="▶ Copiar" Click="OnCopiar"
+                    ToolTip.Tip="Copiar el origen a los destinos marcados" />
+            <Button Classes="chico" Content="◈ Verificar" Click="OnVerificar"
+                    ToolTip.Tip="Comprobar por hash lo ya copiado" />
+            <Button Classes="chico" Content="↺ Reintentar" Click="OnReintentar"
+                    ToolTip.Tip="Reintentar solo lo que fallo" />
+            <Button Classes="chico" Content="⧉ Espejo" Click="OnEspejo"
+                    ToolTip.Tip="Borrar del destino lo que no este en el origen" />
+            <Button Classes="chico" Content="⏸" Click="OnPausa"
+                    ToolTip.Tip="Pausar sin perder el plan" />
+            <Button Classes="chico" Content="⏹" Click="OnParar"
+                    ToolTip.Tip="Parar la cola" />
+          </StackPanel>
+        </Grid>
+
+        <!-- Linea 2: barra general, con ficheros, tamaño y restante (§2.1) -->
+        <Grid Grid.Row="1" Margin="0,7,0,0" ColumnDefinitions="Auto,Auto,*">
+          <Border Grid.Column="0" Width="230" Height="8" CornerRadius="4"
+                  Background="{DynamicResource Navy}" VerticalAlignment="Center">
+            <Grid>
+              <Border HorizontalAlignment="Left" CornerRadius="4"
+                      Background="{DynamicResource Celeste}"
+                      Width="{Binding GeneralPercent, Converter={x:Static vm:Pct.General}}" />
+              <Border HorizontalAlignment="Right" Width="3" Height="8" CornerRadius="1"
+                      Background="{DynamicResource Rojo}" />
+            </Grid>
+          </Border>
+
+          <TextBlock Grid.Column="1" Text="{Binding GeneralText}" Margin="10,0,12,0"
+                     FontSize="11" Foreground="{DynamicResource Silver}"
+                     VerticalAlignment="Center" />
+
+          <TextBlock Grid.Column="2" Text="{Binding StatusLine}" FontSize="11"
+                     Foreground="{DynamicResource Silver}" VerticalAlignment="Center"
+                     HorizontalAlignment="Right" TextTrimming="CharacterEllipsis" />
+        </Grid>
+      </Grid>
+    </Border>
+  </Grid>
+    </TabItem>
+
+    <TabItem Header="Sincronizador"><views:TabSincronizador/></TabItem>
+    <TabItem Header="Escáner"><views:TabEscaner/></TabItem>
+    <TabItem Header="Estadísticas"><views:TabEstadisticas/></TabItem>
+    <TabItem Header="Errores"><views:TabErrores/></TabItem>
+    <TabItem Header="Perfiles"><views:TabPerfiles/></TabItem>
+    <TabItem Header="Ajustes"><views:TabAjustes/></TabItem>
+  </TabControl>
+</Window>

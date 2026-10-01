@@ -1,0 +1,22 @@
+<Solution>
+
+  <!--
+    PLAN.md seccion 6: la solucion debe traer los 5 proyectos.
+    El orden es el de las fases de la seccion 5: primero el motor (Core),
+    luego la interfaz que lo usa, y al final las herramientas de reparto.
+  -->
+  <Folder Name="/Core/">
+    <Project Path="QbaswingMultiTask.Core/QbaswingMultiTask.Core.csproj" />
+  </Folder>
+
+  <Folder Name="/Programas/">
+    <Project Path="QbaswingMultiTask.Desktop/QbaswingMultiTask.Desktop.csproj" />
+    <Project Path="QbaswingMultiTask.Cli/QbaswingMultiTask.Cli.csproj" />
+  </Folder>
+
+  <Folder Name="/Utilidades/">
+    <Project Path="QbaswingMultiTask.Tools/QbaswingMultiTask.Tools.csproj" />
+    <Project Path="QbaswingMultiTask.Installer/QbaswingMultiTask.Installer.csproj" />
+  </Folder>
+
+</Solution>

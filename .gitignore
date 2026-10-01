@@ -1,0 +1,30 @@
+# --- Compilados ---
+bin/
+obj/
+publish/
+*.user
+*.suo
+.vs/
+.idea/
+
+# --- Paquetes NuGet locales ---
+# paquetes/ tiene los .nupkg que se usan con --source. No se suben al repo
+# (213 MB y no hacen falta: se restauran desde NuGet).
+paquetes/
+*.nupkg
+
+# --- Entregables generados ---
+salida/
+*.zip
+*.exe
+
+# --- Datos de la aplicacion en desarrollo ---
+# (los verdaderos van a %APPDATA%, esto es por si se generan en la carpeta)
+datos/
+*.jsonl
+*.log
+
+# --- Sistema ---
+Thumbs.db
+desktop.ini
+.DS_Store
