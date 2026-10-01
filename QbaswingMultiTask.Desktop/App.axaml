@@ -32,19 +32,19 @@
       <ResourceDictionary.ThemeDictionaries>
 
         <ResourceDictionary x:Key="Dark">
-          <SolidColorBrush x:Key="Celeste" Color="#41A5F5" />
-          <SolidColorBrush x:Key="Azul" Color="#0E4FA6" />
-          <SolidColorBrush x:Key="Rojo" Color="#C8102E" />
+          <SolidColorBrush x:Key="Celeste" Color="#5BB4F7" />
+          <SolidColorBrush x:Key="Azul" Color="#1457B0" />
+          <SolidColorBrush x:Key="Rojo" Color="#D6203C" />
           <SolidColorBrush x:Key="Blanco" Color="#FFFFFF" />
-          <SolidColorBrush x:Key="Navy" Color="#0B1626" />
-          <SolidColorBrush x:Key="Tarjeta" Color="#15233B" />
-          <SolidColorBrush x:Key="Borde" Color="#243452" />
-          <SolidColorBrush x:Key="Silver" Color="#7A8AA6" />
-          <SolidColorBrush x:Key="Ok" Color="#2ECC71" />
-          <SolidColorBrush x:Key="Aviso" Color="#F5B041" />
-          <SolidColorBrush x:Key="Fondo" Color="#0B1626" />
-          <SolidColorBrush x:Key="Panel" Color="#15233B" />
-          <SolidColorBrush x:Key="Hover" Color="#1D2E4C" />
+          <SolidColorBrush x:Key="Navy" Color="#1A2536" />
+          <SolidColorBrush x:Key="Tarjeta" Color="#2C3D57" />
+          <SolidColorBrush x:Key="Borde" Color="#45597A" />
+          <SolidColorBrush x:Key="Silver" Color="#A8B8D0" />
+          <SolidColorBrush x:Key="Ok" Color="#35D07F" />
+          <SolidColorBrush x:Key="Aviso" Color="#F7BE55" />
+          <SolidColorBrush x:Key="Fondo" Color="#223047" />
+          <SolidColorBrush x:Key="Panel" Color="#2C3D57" />
+          <SolidColorBrush x:Key="Hover" Color="#3A4E6D" />
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
