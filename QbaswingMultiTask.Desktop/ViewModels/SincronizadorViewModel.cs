@@ -180,7 +180,7 @@ public sealed class SincronizadorViewModel : Vm
     }
 
     /// <summary>Desalinear todos (Ctrl+T): marca todo lo de la derecha como nuevo.</summary>
-    private void DesalinearTodo()
+    public void DesalinearTodo()
     {
         foreach (var j in _der.Where(x => !x.EsCarpeta))
         {

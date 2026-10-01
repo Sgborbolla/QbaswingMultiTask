@@ -374,11 +374,11 @@
   </Grid>
     </TabItem>
 
-    <TabItem Header="Sincronizador"><views:TabSincronizador/></TabItem>
-    <TabItem Header="Escáner"><views:TabEscaner/></TabItem>
-    <TabItem Header="Estadísticas"><views:TabEstadisticas/></TabItem>
-    <TabItem Header="Errores"><views:TabErrores/></TabItem>
-    <TabItem Header="Perfiles"><views:TabPerfiles/></TabItem>
-    <TabItem Header="Ajustes"><views:TabAjustes/></TabItem>
+    <TabItem Header="Sincronizador"><views:TabSincronizador DataContext="{Binding Sync}"/></TabItem>
+    <TabItem Header="Escáner"><views:TabEscaner DataContext="{Binding Escaner}"/></TabItem>
+    <TabItem Header="Estadísticas"><views:TabEstadisticas DataContext="{Binding Stats}"/></TabItem>
+    <TabItem Header="Errores"><views:TabErrores DataContext="{Binding Errores}"/></TabItem>
+    <TabItem Header="Perfiles"><views:TabPerfiles DataContext="{Binding Perfiles}"/></TabItem>
+    <TabItem Header="Ajustes"><views:TabAjustes DataContext="{Binding Ajustes}"/></TabItem>
   </TabControl>
 </Window>

@@ -1,0 +1,152 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:QbaswingMultiTask.Desktop"
+             x:Class="QbaswingMultiTask.Desktop.Views.TabPerfiles"
+             x:DataType="vm:PerfilesViewModel">
+
+  <!-- PLAN.md §2.6: perfiles con nombre que guardan origen, destinos, estructura,
+       filtros, mover/espejo y horario (hora/dias o al insertar una unidad). -->
+  <Grid RowDefinitions="Auto,*,Auto" Margin="10">
+
+    <Border Grid.Row="0" Background="{DynamicResource Panel}" Padding="14,9">
+      <Grid ColumnDefinitions="Auto,*,Auto">
+        <TextBlock Grid.Column="0" Classes="titulo" Text="PERFILES" VerticalAlignment="Center" />
+        <TextBlock Grid.Column="1" Classes="pista" Margin="16,0"
+                   Text="cada perfil recuerda el origen, los destinos y su horario"
+                   VerticalAlignment="Center" />
+        <TextBlock Grid.Column="2" Classes="pista" Text="{Binding RutaPerfiles}"
+                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="380" />
+      </Grid>
+    </Border>
+
+    <Grid Grid.Row="1" ColumnDefinitions="300,*" Margin="0,8,0,8">
+
+      <!-- Lista -->
+      <Border Grid.Column="0" Background="{DynamicResource Panel}" Margin="0,0,8,0"
+              BorderBrush="{DynamicResource Borde}" BorderThickness="1" CornerRadius="10">
+        <Grid RowDefinitions="*,Auto">
+          <ListBox Grid.Row="0" Margin="6" Background="Transparent"
+                   ItemsSource="{Binding Perfiles}"
+                   SelectedItem="{Binding Seleccionado, Mode=TwoWay}">
+            <ListBox.ItemTemplate>
+              <DataTemplate>
+                <StackPanel Margin="0,2">
+                  <TextBlock Text="{Binding Nombre}" FontSize="12" FontWeight="Bold" />
+                  <TextBlock Text="{Binding Origen}" FontSize="10"
+                             Foreground="{DynamicResource Silver}"
+                             TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+          <WrapPanel Grid.Row="1" Orientation="Horizontal" Margin="8,0,8,8">
+            <Button Classes="chico" Content="+ Nuevo" Command="{Binding NuevoCommand}" />
+            <Button Classes="chico" Content="Duplicar" Command="{Binding DuplicarCommand}" />
+            <Button Classes="chico" Content="Borrar" Command="{Binding BorrarCommand}" />
+            <Button Classes="chico" Content="Exportar" Command="{Binding ExportarCommand}" />
+            <Button Classes="chico" Content="Importar" Command="{Binding ImportarCommand}" />
+          </WrapPanel>
+        </Grid>
+      </Border>
+
+      <!-- Editor -->
+      <Border Grid.Column="1" Background="{DynamicResource Panel}"
+              BorderBrush="{DynamicResource Borde}" BorderThickness="1" CornerRadius="10"
+              Padding="14,10">
+        <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,*">
+          <Grid Grid.Row="0" ColumnDefinitions="90,*">
+            <TextBlock Grid.Column="0" Text="Nombre" FontSize="11" VerticalAlignment="Center"
+                       Foreground="{DynamicResource Silver}" />
+            <TextBox Grid.Column="1" FontSize="12" Text="{Binding Nombre, Mode=TwoWay}" />
+          </Grid>
+
+          <Grid Grid.Row="1" ColumnDefinitions="90,*" Margin="0,6,0,0">
+            <TextBlock Grid.Column="0" Text="Origen" FontSize="11" VerticalAlignment="Center"
+                       Foreground="{DynamicResource Silver}" />
+            <TextBox Grid.Column="1" FontSize="11" Watermark="C:\carpeta\origen"
+                     Text="{Binding Origen, Mode=TwoWay}" />
+          </Grid>
+
+          <Grid Grid.Row="2" ColumnDefinitions="90,*" Margin="0,6,0,0">
+            <TextBlock Grid.Column="0" Text="Destinos" FontSize="11" VerticalAlignment="Center"
+                       Foreground="{DynamicResource Silver}" />
+            <TextBox Grid.Column="1" FontSize="11" Watermark="D:\  E:\  o las etiquetas de las unidades"
+                     Text="{Binding Destinos, Mode=TwoWay}" />
+          </Grid>
+
+          <Grid Grid.Row="3" ColumnDefinitions="90,*,90,*" Margin="0,6,0,0">
+            <TextBlock Grid.Column="0" Text="Estructura" FontSize="11" VerticalAlignment="Center"
+                       Foreground="{DynamicResource Silver}" />
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+              <RadioButton GroupName="est" Content="Auto" IsChecked="{Binding EsAuto}" />
+              <RadioButton GroupName="est" Content="Disco duro" IsChecked="{Binding EsHdd}" />
+              <RadioButton GroupName="est" Content="Flash" IsChecked="{Binding EsFlash}" />
+            </StackPanel>
+            <TextBlock Grid.Column="2" Text="Modo" FontSize="11" VerticalAlignment="Center"
+                       Margin="12,0,0,0" Foreground="{DynamicResource Silver}" />
+            <StackPanel Grid.Column="3" Orientation="Horizontal">
+              <CheckBox Content="Mover" FontSize="11" IsChecked="{Binding Mover}" />
+              <CheckBox Content="Espejo" FontSize="11" IsChecked="{Binding Espejo}" />
+            </StackPanel>
+          </Grid>
+
+          <Grid Grid.Row="4" ColumnDefinitions="90,*,90,*" Margin="0,6,0,0">
+            <TextBlock Grid.Column="0" Text="Incluir" FontSize="11" VerticalAlignment="Center"
+                       Foreground="{DynamicResource Silver}" />
+            <TextBox Grid.Column="1" FontSize="11" Watermark="*.jpg  *.png"
+                     Text="{Binding Incluir, Mode=TwoWay}" />
+            <TextBlock Grid.Column="2" Text="Excluir" FontSize="11" VerticalAlignment="Center"
+                       Margin="12,0,0,0" Foreground="{DynamicResource Silver}" />
+            <TextBox Grid.Column="3" FontSize="11" Watermark="*.tmp  *.log"
+                     Text="{Binding Excluir, Mode=TwoWay}" />
+          </Grid>
+
+          <Grid Grid.Row="5" ColumnDefinitions="90,*" Margin="0,6,0,0">
+            <TextBlock Grid.Column="0" Text="Expresión" FontSize="11" VerticalAlignment="Center"
+                       Foreground="{DynamicResource Silver}" />
+            <TextBox Grid.Column="1" FontSize="11" Watermark="expresion de nombres (opcional)"
+                     Text="{Binding Expresion, Mode=TwoWay}" />
+          </Grid>
+
+          <!-- Horario -->
+          <Border Grid.Row="6" Background="{DynamicResource Navy}" Margin="0,10,0,0"
+                  BorderBrush="{DynamicResource Borde}" BorderThickness="1" CornerRadius="8"
+                  Padding="12,9">
+            <StackPanel>
+              <TextBlock Classes="titulo" Text="HORARIO" />
+              <CheckBox Content="Activar (lanzar a una hora)" FontSize="11" Margin="0,4,0,0"
+                        IsChecked="{Binding HorarioActivo}" />
+              <Grid ColumnDefinitions="90,80,*" Margin="0,4,0,0">
+                <TextBlock Grid.Column="0" Text="Hora" FontSize="11" VerticalAlignment="Center"
+                           Foreground="{DynamicResource Silver}" />
+                <TextBox Grid.Column="1" FontSize="11" Watermark="19:00"
+                         Text="{Binding HorarioHora, Mode=TwoWay}" />
+                <Grid Grid.Column="2" ColumnDefinitions="60,*" Margin="12,0,0,0">
+                  <TextBlock Grid.Column="0" Text="Dias" FontSize="11" VerticalAlignment="Center"
+                             Foreground="{DynamicResource Silver}" />
+                  <TextBox Grid.Column="1" FontSize="11" Watermark="L M X J V S D"
+                           Text="{Binding HorarioDias, Mode=TwoWay}" />
+                </Grid>
+              </Grid>
+              <CheckBox Content="Tambien al insertar una unidad" FontSize="11" Margin="0,4,0,0"
+                        IsChecked="{Binding PorInsercion}" />
+            </StackPanel>
+          </Border>
+        </Grid>
+      </Border>
+    </Grid>
+
+    <Border Grid.Row="2" Background="{DynamicResource Panel}" Padding="14,9">
+      <Grid ColumnDefinitions="Auto,*,Auto">
+        <Button Grid.Column="0" Classes="chico principal" Content="✓ Aplicar a Copiar/Mover"
+                Command="{Binding AplicarCommand}"
+                ToolTip.Tip="Coloca este perfil en la pestana Copiar/Mover" />
+        <TextBlock Grid.Column="1" Text="{Binding Aviso}" FontSize="11" Margin="16,0"
+                   Foreground="{DynamicResource Celeste}" VerticalAlignment="Center"
+                   TextTrimming="CharacterEllipsis" />
+        <Button Grid.Column="2" Classes="chico" Content="💾 Guardar perfil"
+                Command="{Binding GuardarCommand}" />
+      </Grid>
+    </Border>
+  </Grid>
+</UserControl>

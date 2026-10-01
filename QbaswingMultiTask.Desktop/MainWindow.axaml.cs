@@ -6,7 +6,9 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Styling;
 using Avalonia.Threading;
+using QbaswingMultiTask.App;
 using QbaswingMultiTask.Desktop;
 using QbaswingMultiTask.Devices;
 
@@ -14,7 +16,7 @@ namespace QbaswingMultiTask.Desktop;
 
 public partial class MainWindow : Window
 {
-    private MainViewModel Vm => (MainViewModel)DataContext;
+    private MainViewModel Vm => (MainViewModel)DataContext!;
 
     /// <summary>
     /// PLAN.md: "Refresco de dispositivos cada 1 s (no 1 ms: evita robar CPU al
@@ -30,12 +32,22 @@ public partial class MainWindow : Window
 
         DataContext = new MainViewModel();
 
+        // Tema guardado (§2.7): se aplica al arrancar y al pulsar Guardar.
+        AplicarTema(SettingsStore.Actual.Tema);
+        Vm.Ajustes.Guardado += s => AplicarTema(s.Tema);
+
         _reloj.Tick += (_, _) => Refrescar();
         _reloj.Start();
 
         KeyDown += OnAtajo;
         Closed += (_, _) => _reloj.Stop();
     }
+
+    /// <summary>Cambia entre claro y oscuro en caliente (Avalonia ThemeVariant).</summary>
+    private void AplicarTema(string tema) =>
+        RequestedThemeVariant = string.Equals(tema, "claro", StringComparison.OrdinalIgnoreCase)
+            ? ThemeVariant.Light
+            : ThemeVariant.Dark;
 
     private void Refrescar()
     {
@@ -216,8 +228,8 @@ public partial class MainWindow : Window
     private async void OnEspejo(object? sender, RoutedEventArgs e) =>
         await Vm.CopiarAsync(mover: false, espejo: true);
 
-    private void OnReintentar(object? sender, RoutedEventArgs e) =>
-        Vm.StatusLine = "reintentar: la cola de fallos se implementa en F5";
+    private async void OnReintentar(object? sender, RoutedEventArgs e) =>
+        await Vm.ReintentarFallidosAsync();
 
     private void OnPausa(object? sender, RoutedEventArgs e) =>
         Vm.StatusLine = "pausa: guardar y retomar la copia se implementa en F5";
@@ -233,6 +245,29 @@ public partial class MainWindow : Window
     private void OnAtajo(object? sender, KeyEventArgs e)
     {
         var ctrl = e.KeyModifiers == KeyModifiers.Control;
+
+        // Pestana Sincronizador (§2.2): las teclas del M2.
+        // Ctrl+A alinear · Ctrl+S revisar · Ctrl+U/E/T desalinear · Entrar aplicar.
+        if (Pestanas.SelectedIndex == 1 && Vm.Ajustes.TeclasM2)
+        {
+            switch (e.Key)
+            {
+                case Key.A:
+                case Key.S:
+                    if (ctrl) { Vm.Sync.Revisar(); e.Handled = true; return; }
+                    break;
+                case Key.U:
+                case Key.E:
+                case Key.T:
+                    if (ctrl) { Vm.Sync.DesalinearTodo(); e.Handled = true; return; }
+                    break;
+                case Key.Enter:
+                    _ = Vm.Sync.AplicarAsync();
+                    e.Handled = true;
+                    return;
+            }
+        }
+
         if (ctrl && e.Key == Key.R) { Refrescar(); e.Handled = true; return; }
         if (ctrl && e.Key == Key.A) { OnTodo(this, new RoutedEventArgs()); e.Handled = true; }
     }

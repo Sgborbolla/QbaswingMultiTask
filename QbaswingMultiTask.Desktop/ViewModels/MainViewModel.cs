@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Avalonia.Threading;
 using QbaswingMultiTask.Devices;
 using QbaswingMultiTask.Engine;
+using QbaswingMultiTask.Profiles;
 using QbaswingMultiTask.Util;
 
 namespace QbaswingMultiTask.Desktop;
@@ -33,7 +34,23 @@ public sealed class MainViewModel : Vm
         Explorador.Cargar();
         RefrescarCommand = new RelayCommand(() => RefrescarDispositivos());
         ReloadDevices();
+
+        // Las seis pestanas restantes (§2), cada una con su propio view model.
+        Sync = new SincronizadorViewModel();
+        Escaner = new EscanerViewModel();
+        Stats = new EstadisticasViewModel();
+        Errores = new ErroresViewModel(this);
+        Perfiles = new PerfilesViewModel(this);
+        Ajustes = new AjustesViewModel();
     }
+
+    // ---------- pestanas (§2) ----------
+    public SincronizadorViewModel Sync { get; }
+    public EscanerViewModel Escaner { get; }
+    public EstadisticasViewModel Stats { get; }
+    public ErroresViewModel Errores { get; }
+    public PerfilesViewModel Perfiles { get; }
+    public AjustesViewModel Ajustes { get; }
 
     // ---------- coleccion de rectangulos ----------
 
@@ -293,6 +310,11 @@ public sealed class MainViewModel : Vm
     /// <summary>Ultimo resultado: alimenta el resumen de §2.8 y la pestaña Errores.</summary>
     public CopyResult? UltimoResultado { get; private set; }
 
+    // Guardado de la ultima operacion, para poder reintentar solo lo que fallo (F5).
+    private List<FileEntry> _ultimosFicheros = new();
+    private List<Destino> _ultimosDestinos = new();
+    private CopyOptions? _ultimasOpciones;
+
     /// <summary>Detiene la copia en curso (boton Parar).</summary>
     public void Parar() => _cts?.Cancel();
 
@@ -359,6 +381,11 @@ public sealed class MainViewModel : Vm
                 }
             }).ToList();
 
+            // Se guarda el plan para poder reintentar solo lo que falle (F5).
+            _ultimosFicheros = ficheros;
+            _ultimosDestinos = destinos;
+            _ultimasOpciones = opciones;
+
             foreach (var d in marcados) d.PrepararCopia(total);
 
             var reloj = Stopwatch.StartNew();
@@ -383,6 +410,11 @@ public sealed class MainViewModel : Vm
                 ct: token);
 
             UltimoResultado = resultado;
+
+            // Estadisticas reales y centro de errores (§2.4 y §2.5).
+            global::QbaswingMultiTask.Stats.StatsStore.Anadir(resultado, raiz, mover ? "mover" : "copiar");
+            Stats.Refrescar();
+            Errores.Refrescar();
 
             var fallos = 0;
             foreach (var d in marcados)
@@ -471,6 +503,101 @@ public sealed class MainViewModel : Vm
         }
         catch (OperationCanceledException) { StatusLine = "verificacion cancelada"; }
         catch (Exception ex) { StatusLine = "no se pudo verificar: " + CopyEngine.Motivo(ex); }
+        finally
+        {
+            _cts?.Dispose();
+            _cts = null;
+            EnMarcha = false;
+            Raise(nameof(EnMarcha));
+            Raise(nameof(PuedeRefrescar));
+        }
+    }
+
+    /// <summary>
+    /// Aplica un perfil (§2.6) a esta pestana: origen, destinos, estructura y
+    /// filtros de fecha. Lo llama la pestana Perfiles con el boton "Aplicar".
+    /// </summary>
+    public void AplicarPerfil(Profile p)
+    {
+        if (p.Origen.Length > 0)
+        {
+            var nombre = p.Origen.TrimEnd('\\', '/').Split('\\', '/').LastOrDefault() ?? p.Origen;
+            Origen = new FolderNode(nombre, p.Origen);
+        }
+
+        var deseados = p.Destinos.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        if (deseados.Count > 0)
+            foreach (var d in Devices)
+                d.Marked = deseados.Contains(d.Info.Root) ||
+                           (d.Info.DriveLetter is { } l && deseados.Contains(l));
+
+        Estructura = p.Estructura switch
+        {
+            "hdd" => ModoEstructura.Hdd,
+            "flash" => ModoEstructura.Flash,
+            _ => ModoEstructura.Auto
+        };
+        FechaDesde = p.Desde;
+        FechaHasta = p.Hasta;
+
+        Raise(nameof(Marcados));
+        Raise(nameof(DestinosText));
+        Raise(nameof(ResumenCopiar));
+        StatusLine = $"perfil aplicado: {p.Nombre}";
+    }
+
+    /// <summary>
+    /// Reintenta solo lo que fallo en la ultima operacion (F5). Vuelve a lanzar
+    /// el motor con las mismas opciones y destinos, pero unicamente con los
+    /// ficheros que aparecen en la lista de errores.
+    /// </summary>
+    public async Task ReintentarFallidosAsync()
+    {
+        if (EnMarcha) { StatusLine = "ya hay una operacion en marcha"; return; }
+        if (_ultimasOpciones is null || UltimoResultado is null || _ultimosDestinos.Count == 0)
+        {
+            StatusLine = "no hay nada que reintentar";
+            return;
+        }
+
+        var fallidos = UltimoResultado.Errors.Select(e => e.Fichero)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var fuente = _ultimosFicheros
+            .Where(f => fallidos.Contains(f.Nombre) || fallidos.Contains(f.RelativePath) ||
+                        fallidos.Contains(f.FullPath))
+            .ToList();
+
+        if (fuente.Count == 0) { StatusLine = "los ficheros con error ya no estan"; return; }
+
+        var motor = new CopyEngine(_ultimasOpciones);
+        EnMarcha = true;
+        _cts = new CancellationTokenSource();
+        var token = _cts.Token;
+        Raise(nameof(EnMarcha));
+        Raise(nameof(PuedeRefrescar));
+        StatusLine = $"reintentando {fuente.Count} fichero(s)...";
+
+        try
+        {
+            var resultado = await motor.CopiarAsync(
+                fuente, _ultimosDestinos,
+                new Progress<CopyProgress>(pr =>
+                {
+                    GeneralPercent = pr.Percent;
+                    if (pr.FicheroActual.Length > 0) StatusLine = "reintentando " + pr.FicheroActual;
+                }),
+                null, null, token);
+
+            UltimoResultado = resultado;
+            global::QbaswingMultiTask.Stats.StatsStore.Anadir(resultado, Origen?.Path ?? "", "reintento");
+            Stats.Refrescar();
+
+            StatusLine = resultado.Success
+                ? $"reintento correcto: {Human.Numero(resultado.FilesCopied)} fichero(s)"
+                : $"siguen fallando {resultado.Errors.Count} fichero(s)";
+        }
+        catch (OperationCanceledException) { StatusLine = "reintento cancelado"; }
+        catch (Exception ex) { StatusLine = "el reintento fallo: " + CopyEngine.Motivo(ex); }
         finally
         {
             _cts?.Dispose();

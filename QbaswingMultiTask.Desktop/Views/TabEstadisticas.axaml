@@ -1,0 +1,162 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:QbaswingMultiTask.Desktop"
+             x:Class="QbaswingMultiTask.Desktop.Views.TabEstadisticas"
+             x:DataType="vm:EstadisticasViewModel">
+
+  <!-- PLAN.md §2.4: tarjetas con datos reales, grafica vectorial por dia y tabla
+       de operaciones. Nada de imagenes: todo se dibuja con controles. -->
+  <Grid RowDefinitions="Auto,Auto,150,*,Auto" Margin="10">
+
+    <!-- Filtros -->
+    <Border Grid.Row="0" Background="{DynamicResource Panel}" Padding="14,9">
+      <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*,Auto">
+        <TextBlock Grid.Column="0" Text="Desde" FontSize="11" VerticalAlignment="Center"
+                   Foreground="{DynamicResource Silver}" Margin="0,0,6,0" />
+        <TextBox Grid.Column="1" Width="92" FontSize="11" Watermark="dd/mm/aaaa"
+                 Text="{Binding Desde, Converter={x:Static vm:Fechas.Txt}, Mode=TwoWay}" />
+        <TextBlock Grid.Column="2" Text="Hasta" FontSize="11" VerticalAlignment="Center"
+                   Foreground="{DynamicResource Silver}" Margin="12,0,6,0" />
+        <TextBox Grid.Column="3" Width="92" FontSize="11" Watermark="dd/mm/aaaa"
+                 Text="{Binding Hasta, Converter={x:Static vm:Fechas.Txt}, Mode=TwoWay}" />
+        <TextBlock Grid.Column="4" Text="Dispositivo" FontSize="11" VerticalAlignment="Center"
+                   Foreground="{DynamicResource Silver}" Margin="12,0,6,0" />
+        <ComboBox Grid.Column="5" MinWidth="160" FontSize="11"
+                  ItemsSource="{Binding Dispositivos}"
+                  SelectedItem="{Binding DispositivoSeleccionado, Mode=TwoWay}" />
+        <StackPanel Grid.Column="6" Orientation="Horizontal" Spacing="6">
+          <Button Classes="chico" Content="↻ Refrescar" Command="{Binding RefrescarCommand}" />
+          <Button Classes="chico" Content="Exportar CSV" Command="{Binding CsvCommand}" />
+          <Button Classes="chico" Content="Guardar PDF" Command="{Binding PdfCommand}" />
+          <Button Classes="chico" Content="Borrar historico" Command="{Binding LimpiarCommand}" />
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!-- Tarjetas -->
+    <Grid Grid.Row="1" Margin="0,8,0,8" ColumnDefinitions="*,*,*,*,*,*">
+      <Border Grid.Column="0" Classes="tarjeta" Margin="0,0,6,0">
+        <StackPanel>
+          <TextBlock Classes="titulo" Text="OPERACIONES" />
+          <TextBlock Text="{Binding OperacionesTexto}" Classes="numero" />
+        </StackPanel>
+      </Border>
+      <Border Grid.Column="1" Classes="tarjeta" Margin="0,0,6,0">
+        <StackPanel>
+          <TextBlock Classes="titulo" Text="FICHEROS" />
+          <TextBlock Text="{Binding FicherosTexto}" Classes="numero" />
+        </StackPanel>
+      </Border>
+      <Border Grid.Column="2" Classes="tarjeta" Margin="0,0,6,0">
+        <StackPanel>
+          <TextBlock Classes="titulo" Text="TOTAL" />
+          <TextBlock Text="{Binding BytesTexto}" Classes="numero" />
+        </StackPanel>
+      </Border>
+      <Border Grid.Column="3" Classes="tarjeta" Margin="0,0,6,0">
+        <StackPanel>
+          <TextBlock Classes="titulo" Text="VEL. MEDIA" />
+          <TextBlock Text="{Binding VelMediaTexto}" Classes="numero" />
+        </StackPanel>
+      </Border>
+      <Border Grid.Column="4" Classes="tarjeta" Margin="0,0,6,0">
+        <StackPanel>
+          <TextBlock Classes="titulo" Text="VEL. REAL" />
+          <TextBlock Text="{Binding VelRealTexto}" Classes="numero" />
+        </StackPanel>
+      </Border>
+      <Border Grid.Column="5" Classes="tarjeta">
+        <StackPanel>
+          <TextBlock Classes="titulo" Text="ERRORES" />
+          <TextBlock Text="{Binding ErroresTexto}" Classes="numero" />
+        </StackPanel>
+      </Border>
+    </Grid>
+
+    <!-- Grafica vectorial por dia -->
+    <Border Grid.Row="2" Background="{DynamicResource Panel}"
+            BorderBrush="{DynamicResource Borde}" BorderThickness="1" CornerRadius="10"
+            Padding="12,8">
+      <Grid RowDefinitions="Auto,*">
+        <TextBlock Grid.Row="0" Classes="titulo" Text="BYTES POR DIA" />
+        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto"
+                      VerticalScrollBarVisibility="Disabled">
+          <ItemsControl ItemsSource="{Binding Grafica}" Margin="0,6,0,0">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal" Spacing="6" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Grid RowDefinitions="*,Auto" Width="40">
+                  <TextBlock Grid.Row="0" Text="{Binding Valor}" FontSize="9"
+                             HorizontalAlignment="Center" VerticalAlignment="Top"
+                             Foreground="{DynamicResource Silver}" />
+                  <Border Grid.Row="0" Width="26" VerticalAlignment="Bottom"
+                          CornerRadius="3,3,0,0" Height="{Binding Altura}"
+                          Background="{DynamicResource Celeste}" />
+                  <TextBlock Grid.Row="1" Text="{Binding Etiqueta}" FontSize="9"
+                             HorizontalAlignment="Center"
+                             Foreground="{DynamicResource Silver}" />
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </Grid>
+    </Border>
+
+    <!-- Tabla -->
+    <Border Grid.Row="3" Background="{DynamicResource Panel}" Margin="0,8,0,8"
+            BorderBrush="{DynamicResource Borde}" BorderThickness="1" CornerRadius="10">
+      <Grid RowDefinitions="Auto,*">
+        <Grid Grid.Row="0" ColumnDefinitions="90,90,2*,130,80,90,90,90,70"
+              Margin="12,9,12,6">
+          <TextBlock Grid.Column="0" Classes="titulo" Text="Cuando" />
+          <TextBlock Grid.Column="1" Classes="titulo" Text="Operacion" />
+          <TextBlock Grid.Column="2" Classes="titulo" Text="Origen" />
+          <TextBlock Grid.Column="3" Classes="titulo" Text="Dispositivo" />
+          <TextBlock Grid.Column="4" Classes="titulo" Text="Ficheros" />
+          <TextBlock Grid.Column="5" Classes="titulo" Text="Tamaño" />
+          <TextBlock Grid.Column="6" Classes="titulo" Text="Vel media" />
+          <TextBlock Grid.Column="7" Classes="titulo" Text="Vel real" />
+          <TextBlock Grid.Column="8" Classes="titulo" Text="Errores" />
+        </Grid>
+        <ScrollViewer Grid.Row="1">
+          <ItemsControl Margin="12,0,12,10" ItemsSource="{Binding Filas}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Grid ColumnDefinitions="90,90,2*,130,80,90,90,90,70" Margin="0,2">
+                  <TextBlock Grid.Column="0" Text="{Binding Cuando}" FontSize="11"
+                             Foreground="{DynamicResource Silver}" />
+                  <TextBlock Grid.Column="1" Text="{Binding Operacion}" FontSize="11" />
+                  <TextBlock Grid.Column="2" Text="{Binding Origen}" FontSize="11"
+                             TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Origen}" />
+                  <TextBlock Grid.Column="3" Text="{Binding Dispositivo}" FontSize="11"
+                             TextTrimming="CharacterEllipsis" />
+                  <TextBlock Grid.Column="4" Text="{Binding Ficheros}" FontSize="11" />
+                  <TextBlock Grid.Column="5" Text="{Binding Tam}" FontSize="11" />
+                  <TextBlock Grid.Column="6" Text="{Binding VelMedia}" FontSize="11"
+                             Foreground="{DynamicResource Silver}" />
+                  <TextBlock Grid.Column="7" Text="{Binding VelReal}" FontSize="11"
+                             Foreground="{DynamicResource Celeste}" />
+                  <TextBlock Grid.Column="8" Text="{Binding Errores}" FontSize="11" />
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </Grid>
+    </Border>
+
+    <Border Grid.Row="4" Background="{DynamicResource Panel}" Padding="14,9">
+      <Grid ColumnDefinitions="*,Auto">
+        <TextBlock Grid.Column="0" Text="{Binding Aviso}" FontSize="11"
+                   Foreground="{DynamicResource Celeste}" VerticalAlignment="Center" />
+        <TextBlock Grid.Column="1" Text="{Binding PeriodoTexto}" FontSize="11"
+                   Foreground="{DynamicResource Silver}" VerticalAlignment="Center" />
+      </Grid>
+    </Border>
+  </Grid>
+</UserControl>

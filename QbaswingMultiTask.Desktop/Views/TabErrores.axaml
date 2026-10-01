@@ -1,0 +1,75 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:QbaswingMultiTask.Desktop"
+             x:Class="QbaswingMultiTask.Desktop.Views.TabErrores"
+             x:DataType="vm:ErroresViewModel">
+
+  <!-- PLAN.md §2.5: el centro de errores. Lista con causa, reintentar solo lo
+       fallido, descartar y guardar el registro. -->
+  <Grid RowDefinitions="Auto,*,Auto" Margin="10">
+
+    <Border Grid.Row="0" Background="{DynamicResource Panel}" Padding="14,9">
+      <Grid ColumnDefinitions="*,Auto">
+        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12">
+          <TextBlock Classes="titulo" Text="CENTRO DE ERRORES" VerticalAlignment="Center" />
+          <TextBlock Classes="pista" Text="{Binding Resumen}" VerticalAlignment="Center" />
+        </StackPanel>
+        <TextBlock Grid.Column="1" Classes="pista" VerticalAlignment="Center"
+                   Text="lo que fallo en la ultima operacion, con su causa" />
+      </Grid>
+    </Border>
+
+    <Border Grid.Row="1" Background="{DynamicResource Panel}" Margin="0,8,0,8"
+            BorderBrush="{DynamicResource Borde}" BorderThickness="1" CornerRadius="10">
+      <Grid RowDefinitions="Auto,*">
+        <Grid Grid.Row="0" ColumnDefinitions="70,2*,150,2*" Margin="12,9,12,6">
+          <TextBlock Grid.Column="0" Classes="titulo" Text="Hora" />
+          <TextBlock Grid.Column="1" Classes="titulo" Text="Fichero" />
+          <TextBlock Grid.Column="2" Classes="titulo" Text="Destino" />
+          <TextBlock Grid.Column="3" Classes="titulo" Text="Motivo" />
+        </Grid>
+        <ScrollViewer Grid.Row="1">
+          <ItemsControl Margin="12,0,12,10" ItemsSource="{Binding Filas}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Grid ColumnDefinitions="70,2*,150,2*" Margin="0,2">
+                  <TextBlock Grid.Column="0" Text="{Binding Hora}" FontSize="11"
+                             Foreground="{DynamicResource Silver}" />
+                  <TextBlock Grid.Column="1" Text="{Binding Fichero}" FontSize="11"
+                             TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Origen}" />
+                  <TextBlock Grid.Column="2" Text="{Binding DestinoTexto}" FontSize="11"
+                             Foreground="{DynamicResource Silver}"
+                             TextTrimming="CharacterEllipsis" />
+                  <TextBlock Grid.Column="3" Text="{Binding Motivo}" FontSize="11"
+                             Foreground="{DynamicResource Aviso}"
+                             TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Motivo}" />
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </Grid>
+    </Border>
+
+    <Border Grid.Row="2" Background="{DynamicResource Panel}" Padding="14,9">
+      <Grid ColumnDefinitions="Auto,*,Auto">
+        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6">
+          <Button Classes="chico principal" Content="↺ Reintentar los fallidos"
+                  Command="{Binding ReintentarCommand}"
+                  ToolTip.Tip="Vuelve a copiar solo lo que dio error" />
+          <Button Classes="chico" Content="Descartar" Command="{Binding DescartarCommand}"
+                  ToolTip.Tip="Quita la lista de errores (no borra ficheros)" />
+          <Button Classes="chico" Content="Guardar CSV" Command="{Binding CsvCommand}" />
+          <Button Classes="chico" Content="Guardar PDF" Command="{Binding PdfCommand}" />
+          <Button Classes="chico" Content="Limpiar historial" Command="{Binding LimpiarCommand}" />
+        </StackPanel>
+        <TextBlock Grid.Column="1" Text="{Binding Aviso}" FontSize="11"
+                   Margin="16,0" VerticalAlignment="Center"
+                   Foreground="{DynamicResource Celeste}"
+                   TextTrimming="CharacterEllipsis" />
+        <TextBlock Grid.Column="2" Text="{Binding Resumen}" FontSize="11"
+                   VerticalAlignment="Center" Foreground="{DynamicResource Silver}" />
+      </Grid>
+    </Border>
+  </Grid>
+</UserControl>

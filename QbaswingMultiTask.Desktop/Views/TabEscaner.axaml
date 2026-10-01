@@ -1,0 +1,176 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:QbaswingMultiTask.Desktop"
+             x:Class="QbaswingMultiTask.Desktop.Views.TabEscaner"
+             x:DataType="vm:EscanerViewModel">
+
+  <!-- PLAN.md §2.3: indice del disco, duplicados por contenido, ficheros que
+       faltan entre dos carpetas y busqueda por comodin. -->
+  <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" Margin="10">
+
+    <Border Grid.Row="0" Background="{DynamicResource Panel}" Padding="14,9">
+      <Grid ColumnDefinitions="Auto,*,Auto">
+        <TextBlock Grid.Column="0" Classes="titulo" Text="ESCANER E INDICE" VerticalAlignment="Center" />
+        <TextBlock Grid.Column="1" Text="{Binding IndiceTexto}" FontSize="11"
+                   Margin="16,0" VerticalAlignment="Center"
+                   Foreground="{DynamicResource Silver}" />
+        <TextBlock Grid.Column="2" Text="{Binding Actual}" FontSize="10"
+                   VerticalAlignment="Center" Foreground="{DynamicResource Silver}"
+                   TextTrimming="CharacterEllipsis" MaxWidth="320" />
+      </Grid>
+    </Border>
+
+    <!-- Unidades y acciones -->
+    <Border Grid.Row="1" Background="{DynamicResource Panel}" Margin="0,8,0,0"
+            BorderBrush="{DynamicResource Borde}" BorderThickness="1" CornerRadius="10"
+            Padding="12,9">
+      <Grid RowDefinitions="Auto,Auto">
+        <ItemsControl Grid.Row="0" ItemsSource="{Binding Discos}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <CheckBox Content="{Binding Texto}" IsChecked="{Binding Marcar, Mode=TwoWay}"
+                        FontSize="11" Margin="0,0,14,4" />
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="6" Margin="0,6,0,0">
+          <Button Classes="chico" Content="Todas / ninguna" Command="{Binding MarcarTodoCommand}" />
+          <Button Classes="chico" Content="↻ Unidades" Command="{Binding RefrescarDiscosCommand}" />
+          <Button Classes="chico principal" Content="⛏ Escanear e indexar"
+                  Command="{Binding EscanearCommand}"
+                  ToolTip.Tip="Recorre las unidades marcadas y guarda el indice real" />
+          <Button Classes="chico" Content="⧉ Buscar duplicados" Command="{Binding DuplicadosCommand}" />
+          <ProgressBar Width="180" Height="8" Minimum="0" Maximum="100"
+                       Value="{Binding Progreso}" VerticalAlignment="Center"
+                       Foreground="{DynamicResource Celeste}"
+                       Background="{DynamicResource Navy}" />
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!-- Buscar y comparar carpetas -->
+    <Border Grid.Row="2" Background="{DynamicResource Panel}" Margin="0,8,0,8"
+            BorderBrush="{DynamicResource Borde}" BorderThickness="1" CornerRadius="10"
+            Padding="12,9">
+      <Grid ColumnDefinitions="Auto,*,Auto,Auto,*,Auto">
+        <TextBlock Grid.Column="0" Text="Buscar" FontSize="11" VerticalAlignment="Center"
+                   Foreground="{DynamicResource Silver}" Margin="0,0,6,0" />
+        <TextBox Grid.Column="1" FontSize="11" Watermark="nombre o comodin (cap*, *.mp4)"
+                 Text="{Binding Busqueda, Mode=TwoWay}" />
+        <Button Grid.Column="2" Classes="chico" Content="🔍 Buscar"
+                Command="{Binding BuscarCommand}" Margin="6,0,14,0" />
+
+        <TextBlock Grid.Column="3" Text="Faltan (A→B)" FontSize="11" VerticalAlignment="Center"
+                   Foreground="{DynamicResource Silver}" Margin="0,0,6,0" />
+        <Grid Grid.Column="4" ColumnDefinitions="*,6,*">
+          <TextBox Grid.Column="0" FontSize="11" Watermark="carpeta A"
+                   Text="{Binding CarpetaA, Mode=TwoWay}" />
+          <TextBox Grid.Column="2" FontSize="11" Watermark="carpeta B"
+                   Text="{Binding CarpetaB, Mode=TwoWay}" />
+        </Grid>
+        <Button Grid.Column="5" Classes="chico" Content="Comparar"
+                Command="{Binding FaltantesCommand}" Margin="6,0,0,0" />
+      </Grid>
+    </Border>
+
+    <!-- Resultados: duplicados | faltantes | busqueda -->
+    <Grid Grid.Row="3" ColumnDefinitions="1.2*,*,1.2*">
+
+      <Border Grid.Column="0" Background="{DynamicResource Panel}" Margin="0,0,6,0"
+              BorderBrush="{DynamicResource Borde}" BorderThickness="1" CornerRadius="10">
+        <Grid RowDefinitions="Auto,*">
+          <TextBlock Grid.Row="0" Classes="titulo" Text="DUPLICADOS (por contenido)"
+                     Margin="12,9,12,5" />
+          <ScrollViewer Grid.Row="1">
+            <ItemsControl Margin="12,0,12,10" ItemsSource="{Binding Duplicados}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <StackPanel Margin="0,0,0,6">
+                    <Grid ColumnDefinitions="*,Auto">
+                      <TextBlock Grid.Column="0" Text="{Binding Nombre}" FontSize="11"
+                                 TextTrimming="CharacterEllipsis" />
+                      <TextBlock Grid.Column="1" FontSize="10"
+                                 Foreground="{DynamicResource Aviso}">
+                        <Run Text="{Binding Copias}" /><Run Text=" copias · " /><Run Text="{Binding DesperdicioTexto}" />
+                      </TextBlock>
+                    </Grid>
+                    <TextBlock Text="{Binding Ubicaciones}" FontSize="9"
+                               Foreground="{DynamicResource Silver}"
+                               TextTrimming="CharacterEllipsis"
+                               ToolTip.Tip="{Binding Ubicaciones}" />
+                  </StackPanel>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+        </Grid>
+      </Border>
+
+      <Border Grid.Column="1" Background="{DynamicResource Panel}" Margin="0,0,6,0"
+              BorderBrush="{DynamicResource Borde}" BorderThickness="1" CornerRadius="10">
+        <Grid RowDefinitions="Auto,*">
+          <TextBlock Grid.Row="0" Classes="titulo" Text="FALTAN EN B" Margin="12,9,12,5" />
+          <ScrollViewer Grid.Row="1">
+            <ItemsControl Margin="12,0,12,10" ItemsSource="{Binding Faltantes}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <Grid ColumnDefinitions="*,Auto" Margin="0,1">
+                    <TextBlock Grid.Column="0" Text="{Binding Relativo}" FontSize="11"
+                               TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Parecido}" />
+                    <TextBlock Grid.Column="1" Text="{Binding TamTexto}" FontSize="10"
+                               Foreground="{DynamicResource Silver}" />
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+        </Grid>
+      </Border>
+
+      <Border Grid.Column="2" Background="{DynamicResource Panel}"
+              BorderBrush="{DynamicResource Borde}" BorderThickness="1" CornerRadius="10">
+        <Grid RowDefinitions="Auto,*">
+          <TextBlock Grid.Row="0" Classes="titulo" Text="RESULTADOS DE LA BUSQUEDA"
+                     Margin="12,9,12,5" />
+          <ScrollViewer Grid.Row="1">
+            <ItemsControl Margin="12,0,12,10" ItemsSource="{Binding Resultados}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <Grid ColumnDefinitions="*,Auto" Margin="0,1">
+                    <StackPanel Grid.Column="0">
+                      <TextBlock Text="{Binding Nombre}" FontSize="11"
+                                 TextTrimming="CharacterEllipsis" />
+                      <TextBlock Text="{Binding Carpeta}" FontSize="9"
+                                 Foreground="{DynamicResource Silver}"
+                                 TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                    <TextBlock Grid.Column="1" Text="{Binding TamTexto}" FontSize="10"
+                               Foreground="{DynamicResource Silver}" />
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+        </Grid>
+      </Border>
+    </Grid>
+
+    <Border Grid.Row="4" Background="{DynamicResource Panel}" Padding="14,9" Margin="0,8,0,0">
+      <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+        <TextBlock Grid.Column="0" Text="{Binding Estado}" FontSize="11"
+                   Foreground="{DynamicResource Celeste}" VerticalAlignment="Center" />
+        <TextBlock Grid.Column="1" Text="{Binding Resumen}" FontSize="11" Margin="16,0"
+                   Foreground="{DynamicResource Silver}" VerticalAlignment="Center" />
+        <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="6">
+          <Button Classes="chico" Content="Guardar CSV" Command="{Binding CsvCommand}" />
+          <Button Classes="chico" Content="Guardar PDF" Command="{Binding PdfCommand}" />
+          <Button Classes="chico" Content="Limpiar vista" Command="{Binding LimpiarCommand}" />
+        </StackPanel>
+      </Grid>
+    </Border>
+  </Grid>
+</UserControl>

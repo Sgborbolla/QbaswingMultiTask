@@ -1,0 +1,168 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:QbaswingMultiTask.Desktop"
+             x:Class="QbaswingMultiTask.Desktop.Views.TabAjustes"
+             x:DataType="vm:AjustesViewModel">
+
+  <!-- PLAN.md §2.7: tema claro/oscuro, tamano de letra, buffers, verificacion,
+       minimo libre, umbral de lentitud, indice automatico, exclusiones, idioma.
+       Los ajustes se guardan en %AppData%\QbaswingMultiTask\ajustes.json. -->
+  <Grid RowDefinitions="Auto,*,Auto" Margin="10">
+
+    <Border Grid.Row="0" Background="{DynamicResource Panel}" Padding="14,9">
+      <Grid ColumnDefinitions="Auto,*,Auto">
+        <TextBlock Grid.Column="0" Classes="titulo" Text="AJUSTES" VerticalAlignment="Center" />
+        <TextBlock Grid.Column="1" Classes="pista" Margin="16,0"
+                   Text="los cambios se aplican al pulsar Guardar"
+                   VerticalAlignment="Center" />
+        <TextBlock Grid.Column="2" Classes="pista" Text="{Binding CarpetaDatos}"
+                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="420" />
+      </Grid>
+    </Border>
+
+    <ScrollViewer Grid.Row="1" Margin="0,8,0,8">
+      <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+
+        <!-- Columna izquierda -->
+        <StackPanel Grid.Column="0" Spacing="10">
+
+          <Border Classes="tarjeta">
+            <StackPanel>
+              <TextBlock Classes="titulo" Text="APARIENCIA" />
+              <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                <RadioButton GroupName="tema" Content="Oscuro" IsChecked="{Binding TemaOscuro}" />
+                <RadioButton GroupName="tema" Content="Claro" IsChecked="{Binding TemaClaro}" />
+              </StackPanel>
+              <Grid ColumnDefinitions="110,*,70" Margin="0,8,0,0">
+                <TextBlock Grid.Column="0" Text="Tamano de letra" FontSize="11"
+                           VerticalAlignment="Center" Foreground="{DynamicResource Silver}" />
+                <Slider Grid.Column="1" Minimum="9" Maximum="22" TickFrequency="1"
+                        IsSnapToTickEnabled="True" Value="{Binding TamanoLetra, Mode=TwoWay}" />
+                <TextBlock Grid.Column="2" Text="{Binding TamanoLetraTexto}" FontSize="11"
+                           VerticalAlignment="Center" HorizontalAlignment="Right" />
+              </Grid>
+            </StackPanel>
+          </Border>
+
+          <Border Classes="tarjeta">
+            <StackPanel>
+              <TextBlock Classes="titulo" Text="COPIA" />
+              <CheckBox Content="Verificar con hash despues de copiar (mas lento, mas seguro)"
+                        FontSize="11" Margin="0,6,0,0" IsChecked="{Binding Verificar}" />
+              <CheckBox Content="Conservar fechas" FontSize="11" IsChecked="{Binding CopiarFechas}" />
+              <CheckBox Content="Conservar atributos" FontSize="11" IsChecked="{Binding CopiarAtributos}" />
+              <Grid ColumnDefinitions="170,80,*" Margin="0,6,0,0">
+                <TextBlock Grid.Column="0" Text="Tamano del buffer" FontSize="11"
+                           VerticalAlignment="Center" Foreground="{DynamicResource Silver}" />
+                <TextBox Grid.Column="1" FontSize="11" Text="{Binding BufferMb, Mode=TwoWay}" />
+                <TextBlock Grid.Column="2" Text="MB (0 = automatico)" FontSize="10"
+                           Margin="6,0,0,0" VerticalAlignment="Center"
+                           Foreground="{DynamicResource Silver}" />
+              </Grid>
+              <Grid ColumnDefinitions="170,80,*" Margin="0,6,0,0">
+                <TextBlock Grid.Column="0" Text="Copias en paralelo" FontSize="11"
+                           VerticalAlignment="Center" Foreground="{DynamicResource Silver}" />
+                <TextBox Grid.Column="1" FontSize="11" Text="{Binding Paralelo, Mode=TwoWay}" />
+                <TextBlock Grid.Column="2" Text="hilos (1-8)" FontSize="10" Margin="6,0,0,0"
+                           VerticalAlignment="Center" Foreground="{DynamicResource Silver}" />
+              </Grid>
+            </StackPanel>
+          </Border>
+
+          <Border Classes="tarjeta">
+            <StackPanel>
+              <TextBlock Classes="titulo" Text="UMBRALES" />
+              <Grid ColumnDefinitions="170,80,*" Margin="0,6,0,0">
+                <TextBlock Grid.Column="0" Text="Espacio libre minimo" FontSize="11"
+                           VerticalAlignment="Center" Foreground="{DynamicResource Silver}" />
+                <TextBox Grid.Column="1" FontSize="11" Text="{Binding MinLibreMb, Mode=TwoWay}" />
+                <TextBlock Grid.Column="2" Text="MB (avisa si baja de ahi)" FontSize="10"
+                           Margin="6,0,0,0" VerticalAlignment="Center"
+                           Foreground="{DynamicResource Silver}" />
+              </Grid>
+              <Grid ColumnDefinitions="170,*,70" Margin="0,8,0,0">
+                <TextBlock Grid.Column="0" Text="Avisar si va lento" FontSize="11"
+                           VerticalAlignment="Center" Foreground="{DynamicResource Silver}" />
+                <Slider Grid.Column="1" Minimum="0.5" Maximum="60" TickFrequency="0.5"
+                        IsSnapToTickEnabled="True" Value="{Binding UmbralLentoMb, Mode=TwoWay}" />
+                <TextBlock Grid.Column="2" Text="{Binding UmbralLentoMb, StringFormat='{}{0:0.0} MB/s'}"
+                           FontSize="10" VerticalAlignment="Center" HorizontalAlignment="Right" />
+              </Grid>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+
+        <!-- Columna derecha -->
+        <StackPanel Grid.Column="1" Spacing="10">
+
+          <Border Classes="tarjeta">
+            <StackPanel>
+              <TextBlock Classes="titulo" Text="INDICE AUTOMATICO" />
+              <Grid ColumnDefinitions="170,80,*" Margin="0,6,0,0">
+                <TextBlock Grid.Column="0" Text="Cada cuantos minutos" FontSize="11"
+                           VerticalAlignment="Center" Foreground="{DynamicResource Silver}" />
+                <TextBox Grid.Column="1" FontSize="11" Text="{Binding IndiceMinutos, Mode=TwoWay}" />
+                <TextBlock Grid.Column="2" Text="0 = desactivado" FontSize="10" Margin="6,0,0,0"
+                           VerticalAlignment="Center" Foreground="{DynamicResource Silver}" />
+              </Grid>
+            </StackPanel>
+          </Border>
+
+          <Border Classes="tarjeta">
+            <StackPanel>
+              <TextBlock Classes="titulo" Text="SINCRONIZADOR" />
+              <Grid ColumnDefinitions="170,*,70" Margin="0,6,0,0">
+                <TextBlock Grid.Column="0" Text="Umbral de series" FontSize="11"
+                           VerticalAlignment="Center" Foreground="{DynamicResource Silver}" />
+                <Slider Grid.Column="1" Minimum="10" Maximum="100" TickFrequency="5"
+                        IsSnapToTickEnabled="True" Value="{Binding UmbralSeries, Mode=TwoWay}" />
+                <TextBlock Grid.Column="2" Text="{Binding UmbralSeriesTexto}" FontSize="10"
+                           VerticalAlignment="Center" HorizontalAlignment="Right" />
+              </Grid>
+              <CheckBox Content="Usar los atajos del M2 (Ctrl+A/S/U/E/T, Entrar)"
+                        FontSize="11" Margin="0,4,0,0" IsChecked="{Binding TeclasM2}" />
+            </StackPanel>
+          </Border>
+
+          <Border Classes="tarjeta">
+            <StackPanel>
+              <TextBlock Classes="titulo" Text="EXCLUSIONES" />
+              <TextBlock Classes="pista" Margin="0,4,0,4"
+                         Text="una ruta o patron por linea; esas rutas nunca se tocan" />
+              <TextBox FontSize="11" AcceptsReturn="True" Height="96"
+                       TextWrapping="Wrap" Watermark="C:\Windows&#10;*.tmp&#10;$RECYCLE.BIN"
+                       Text="{Binding ExclusionesTexto, Mode=TwoWay}" />
+            </StackPanel>
+          </Border>
+
+          <Border Classes="tarjeta">
+            <StackPanel>
+              <TextBlock Classes="titulo" Text="IDIOMA" />
+              <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                <RadioButton GroupName="idi" Content="Espanol" IsChecked="{Binding IdiomaEspanol}" />
+                <RadioButton GroupName="idi" Content="English" IsChecked="{Binding IdiomaIngles}" />
+              </StackPanel>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </Grid>
+    </ScrollViewer>
+
+    <Border Grid.Row="2" Background="{DynamicResource Panel}" Padding="14,9">
+      <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto">
+        <Button Grid.Column="0" Classes="chico principal" Content="💾 Guardar"
+                Command="{Binding GuardarCommand}" />
+        <TextBlock Grid.Column="1" Text="{Binding Aviso}" FontSize="11" Margin="16,0"
+                   Foreground="{DynamicResource Celeste}" VerticalAlignment="Center"
+                   TextTrimming="CharacterEllipsis" />
+        <Button Grid.Column="2" Classes="chico" Content="Cancelar"
+                Command="{Binding CancelarCommand}" />
+        <Button Grid.Column="3" Classes="chico" Content="Abrir carpeta de datos"
+                Command="{Binding AbrirDatosCommand}" Margin="6,0" />
+        <Button Grid.Column="4" Classes="chico" Content="Migrar datos antiguos"
+                Command="{Binding MigrarCommand}"
+                ToolTip.Tip="Copia los datos del programa original si los encuentra" />
+      </Grid>
+    </Border>
+  </Grid>
+</UserControl>
