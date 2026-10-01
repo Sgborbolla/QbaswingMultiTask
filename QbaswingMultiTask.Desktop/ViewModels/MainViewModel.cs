@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Avalonia.Threading;
 using QbaswingMultiTask.Devices;
 using QbaswingMultiTask.Engine;
+using QbaswingMultiTask.Pending;
 using QbaswingMultiTask.Profiles;
 using QbaswingMultiTask.Util;
 
@@ -43,6 +44,10 @@ public sealed class MainViewModel : Vm
         Errores = new ErroresViewModel(this);
         Perfiles = new PerfilesViewModel(this);
         Ajustes = new AjustesViewModel();
+
+        // Cola de pendientes de la sesion anterior (§2.5): si el programa se cerro
+        // con errores, se recuperan aqui para poder reintentarlos.
+        CargarPendientes();
     }
 
     // ---------- pestanas (§2) ----------
@@ -416,6 +421,7 @@ public sealed class MainViewModel : Vm
             global::QbaswingMultiTask.Stats.StatsStore.Anadir(resultado, raiz, mover ? "mover" : "copiar");
             Stats.Refrescar();
             Errores.Refrescar();
+            GuardarPendientes(resultado, raiz);
 
             var fallos = 0;
             foreach (var d in marcados)
@@ -592,6 +598,7 @@ public sealed class MainViewModel : Vm
             UltimoResultado = resultado;
             global::QbaswingMultiTask.Stats.StatsStore.Anadir(resultado, Origen?.Path ?? "", "reintento");
             Stats.Refrescar();
+            GuardarPendientes(resultado, Origen?.Path ?? "");
 
             StatusLine = resultado.Success
                 ? $"reintento correcto: {Human.Numero(resultado.FilesCopied)} fichero(s)"
@@ -607,6 +614,100 @@ public sealed class MainViewModel : Vm
             Raise(nameof(EnMarcha));
             Raise(nameof(PuedeRefrescar));
         }
+    }
+
+    // ---------- cola persistente de pendientes (F5, §2.5) ----------
+
+    /// <summary>
+    /// Guarda el plan si quedo algo fallido; lo borra si ya no queda nada. Asi la
+    /// pestana Errores conserva los pendientes aunque se cierre el programa.
+    /// </summary>
+    private void GuardarPendientes(CopyResult resultado, string origen)
+    {
+        try
+        {
+            if (resultado.Errors.Count == 0 || _ultimasOpciones is null || _ultimosDestinos.Count == 0)
+            {
+                PendingStore.Borrar();
+                return;
+            }
+            var opciones = _ultimasOpciones;
+
+            var fallidos = resultado.Errors.Select(e => e.Fichero)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var ficheros = _ultimosFicheros
+                .Where(f => fallidos.Contains(f.Nombre) || fallidos.Contains(f.RelativePath) ||
+                            fallidos.Contains(f.FullPath))
+                .Select(PendingStore.De)
+                .ToList();
+            if (ficheros.Count == 0) { PendingStore.Borrar(); return; }
+
+            var plan = new PlanPendiente
+            {
+                Origen = origen,
+                Ficheros = ficheros,
+                Destinos = _ultimosDestinos.Select(d => new DestinoPendiente
+                {
+                    Raiz = d.Raiz,
+                    Etiqueta = d.Etiqueta,
+                    Estructura = d.Estructura ?? opciones.Structure
+                }).ToList(),
+                Opciones = PendingStore.De(opciones),
+                Errores = resultado.Errors.Select(e => new ErrorPendiente
+                {
+                    Fichero = e.Fichero,
+                    Origen = e.Origen,
+                    Destino = e.Destino,
+                    Motivo = e.Motivo,
+                    Hora = e.Hora,
+                    Reintentable = e.Reintentable
+                }).ToList()
+            };
+            PendingStore.Guardar(plan);
+        }
+        catch { /* guardar la cola nunca debe romper una copia */ }
+    }
+
+    /// <summary>Recupera la cola de la sesion anterior, si la hay.</summary>
+    private void CargarPendientes()
+    {
+        var plan = PendingStore.Leer();
+        if (plan is null) return;
+
+        try
+        {
+            _ultimosFicheros = plan.Ficheros.Select(PendingStore.A).ToList();
+            _ultimosDestinos = plan.Destinos.Select(d => new Destino
+            {
+                Raiz = d.Raiz,
+                Etiqueta = d.Etiqueta,
+                Estructura = d.Estructura
+            }).ToList();
+            _ultimasOpciones = PendingStore.A(plan.Opciones);
+
+            var recuerdo = new CopyResult
+            {
+                FilesTotal = plan.Ficheros.Count,
+                FilesFailed = plan.Errores.Count
+            };
+            foreach (var e in plan.Errores)
+                recuerdo.Errors.Add(new CopyError
+                {
+                    Fichero = e.Fichero,
+                    Origen = e.Origen,
+                    Destino = e.Destino,
+                    Motivo = e.Motivo,
+                    Hora = e.Hora,
+                    Reintentable = e.Reintentable
+                });
+
+            // Se apunta como ultimo resultado para que la pestana Errores lo vea y
+            // ofrezca "reintentar"; no es un resultado de esta sesion.
+            UltimoResultado = recuerdo;
+            Errores.Refrescar();
+            StatusLine = $"recuperados {plan.Errores.Count} pendiente(s) de la sesion anterior";
+        }
+        catch { }
     }
 
     // ---------- portapapeles real de Windows (F3, §2.1) ----------
@@ -732,6 +833,7 @@ public sealed class MainViewModel : Vm
             global::QbaswingMultiTask.Stats.StatsStore.Anadir(resultado, raiz, cortar ? "mover" : "pegar");
             Stats.Refrescar();
             Errores.Refrescar();
+            GuardarPendientes(resultado, raiz);
 
             foreach (var d in marcados) d.CopyActive = false;
             StatusLine = resultado.Success

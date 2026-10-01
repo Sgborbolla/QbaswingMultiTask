@@ -116,6 +116,15 @@ public sealed class ErroresViewModel : Vm
         try
         {
             await _main.ReintentarFallidosAsync();
+
+            // Si el reintento salio bien, la lista queda limpia: antes seguia
+            // mostrando los errores viejos aunque ya estuvieran resueltos.
+            if (_main.UltimoResultado?.Success == true)
+            {
+                _vistos.Clear();
+                Filas.Clear();
+            }
+
             Refrescar();
             Aviso = Filas.Count == 0
                 ? "reintento correcto: ya no queda nada pendiente"

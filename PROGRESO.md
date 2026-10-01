@@ -80,13 +80,18 @@ las capturas son para revisión humana.
   - Cortar + pegar = **mover** (el motor no borra el origen hasta cuadrar hash).
   - **Cajas (§3):** soltar ficheros de Windows sobre un rectángulo los manda
     **solo a ese** destino.
-  - Falta: arrastrar **hacia fuera** (del programa al Explorador).
+  - **Arrastrar hacia fuera:** la carpeta de origen se puede arrastrar y soltar
+    en el Explorador/ Escritorio de Windows (copia o mueve según las teclas).
 - **F4 Sincronizador:** dos paneles con su raíz, mini-discos, árbol, marcas
   `✓/●/=`, umbral y atajos M2 (`Ctrl+A/S/U/E/T`, `Entrar`). Corregido: el panel
   derecho se quedaba vacío cuando solo había una unidad lista; ahora siempre
   muestra una raíz.
 - **F5 Errores:** lista con causa, **reintentar solo lo fallido**, descartar,
   CSV y PDF. `MainViewModel` guarda el último plan para poder reintentarlo.
+  Además la **cola es persistente**: se guarda en
+  `estadisticas\pendientes.json` y al abrir el programa se recupera, así se
+  puede reintentar de un día para otro. Al reintentar con éxito la lista queda
+  limpia (antes seguía mostrando los errores ya resueltos).
 - **F6 Escáner:** índice real, duplicados por hash, faltantes A→B, búsqueda por
   comodín, CSV y PDF.
 - **F7 Estadísticas:** tarjetas con datos **reales** del motor y gráfica vectorial
@@ -111,9 +116,9 @@ las capturas son para revisión humana.
 | F0 | Renombre a QbaswingMultiTask + solución de 5 proyectos | **HECHO** — los 5 compilan |
 | F1 | Motor: timestamps/atributos, espacio libre, multihilo, lentitud USB, zero-kb, `indexPercent`, estadísticas reales, limpieza, comodines, tiempo restante | **HECHO** — probado con arnés (`motor`) y usado por la GUI |
 | F2 | Dispositivos: expulsar, formatear, velocidad, estructura por tipo, red | **HECHO** — CLI (`listar/copiar/mover/expulsar/formatear`) y GUI |
-| F3 | GUI principal: 7 pestañas, explorador, rectángulos ☑, barras, arrastre, portapapeles, multipaste | **EN CURSO** — portapapeles real CF_HDROP (Ctrl+C/X/V), pegado a marcados o a la carpeta abierta, y cajas (soltar sobre un rectángulo). Falta arrastrar **hacia fuera** (a Explorer) |
+| F3 | GUI principal: 7 pestañas, explorador, rectángulos ☑, barras, arrastre, portapapeles, multipaste | **HECHO** — 7 pestañas; portapapeles real CF_HDROP (Ctrl+C/X/V); pegado a marcados o a la carpeta abierta; cajas (soltar sobre un rectángulo); arrastrar la carpeta de origen **hacia fuera** al Explorador |
 | F4 | Sincronizador Total Commander: dos paneles, mini-discos, árbol, `✓/●/=`, teclas M2, revisar/aplicar | **HECHO** — dos paneles con raíz, marcas y atajos M2 |
-| F5 | Errores + cola persistente + reintento de lo fallado + cancelar en curso | **HECHO (GUI)** — centro de errores con reintento de solo lo fallido, descartar y CSV/PDF. Falta persistir la cola entre sesiones |
+| F5 | Errores + cola persistente + reintento de lo fallado + cancelar en curso | **HECHO** — centro de errores con reintento de solo lo fallido, descartar y CSV/PDF; cola persistente en `estadisticas\pendientes.json` que se recupera al abrir |
 | F6 | Escáner en GUI: duplicados/faltantes/buscar + exportar + Ctrl+G | **HECHO (GUI)** — índice real, duplicados por hash, faltantes A→B, búsqueda, CSV/PDF |
 | F7 | Estadísticas reales + resumen + PDF + gráfica por día | **HECHO (GUI)** — tarjetas reales, tabla, gráfica vectorial por día, filtro, CSV/PDF |
 | F8 | Perfiles + horario + expresiones + índice automático | **HECHO (GUI)** — alta/edición/duplicar/borrar/exportar/importar y **aplicar al Copiar/Mover**; horario por hora/días o al insertar |
