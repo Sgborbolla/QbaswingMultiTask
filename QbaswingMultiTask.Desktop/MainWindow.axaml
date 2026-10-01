@@ -234,6 +234,9 @@
                           Classes.error="{Binding HasError}"
                           Width="242" Height="258" Margin="0,0,10,10"
                           Padding="12"
+                          DragDrop.AllowDrop="True"
+                          DragDrop.DragOver="OnDiscoDragOver"
+                          DragDrop.Drop="OnDiscoDrop"
                           PointerPressed="OnDiscoPressed">
                     <Border.ContextMenu>
                       <ContextMenu>

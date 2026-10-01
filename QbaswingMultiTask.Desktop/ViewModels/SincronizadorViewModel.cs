@@ -48,8 +48,14 @@ public sealed class SincronizadorViewModel : Vm
 
         CargarDiscos();
         var discos = Discos.Where(d => d.IsReady).ToList();
-        if (discos.Count > 0) Izquierda = discos[0].Root;
-        if (discos.Count > 1) Derecha = discos[1].Root;
+        if (discos.Count > 0)
+        {
+            // Los dos paneles tienen que mostrar SIEMPRE una raiz. Si solo hay una
+            // unidad lista, el panel derecho usa la misma: antes se quedaba vacio
+            // porque solo se rellenaba cuando habia un segundo disco.
+            Izquierda = discos[0].Root;
+            Derecha = discos.Count > 1 ? discos[1].Root : discos[0].Root;
+        }
     }
 
     public ObservableCollection<DeviceInfo> Discos { get; }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -606,5 +607,206 @@ public sealed class MainViewModel : Vm
             Raise(nameof(EnMarcha));
             Raise(nameof(PuedeRefrescar));
         }
+    }
+
+    // ---------- portapapeles real de Windows (F3, §2.1) ----------
+
+    /// <summary>Ctrl+C (cortar=false) o Ctrl+X (cortar=true) del nodo del explorador.</summary>
+    public Task CopiarAlPortapapelesAsync(bool cortar)
+    {
+        if (!HayOrigen) { StatusLine = "no hay nada seleccionado en el explorador"; return Task.CompletedTask; }
+        var ruta = Origen!.Path;
+        StatusLine = Platform.WindowsClipboard.PonerArchivos(new[] { ruta }, cortar)
+            ? (cortar ? "cortado: " : "copiado: ") + ruta
+            : "no se pudo escribir en el portapapeles de Windows";
+        return Task.CompletedTask;
+    }
+
+    /// <summary>Ctrl+V sobre la pestana Copiar/Mover: lee el portapapeles real (§2.1).</summary>
+    public async Task PegarAsync()
+    {
+        var rutas = Platform.WindowsClipboard.LeerArchivos(out var cortar);
+        await PegarListaAsync(rutas, cortar, null);
+    }
+
+    /// <summary>
+    /// Pega una lista de rutas. Con rectangulos marcados -> multipaste a todos;
+    /// sin marcados -> a la carpeta abierta en el explorador. Si se pasa
+    /// <paramref name="soloDestino"/> va unicamente a ese rectangulo (cajas, §3).
+    /// Si venia de un cortar, mueve con verificacion de hash.
+    /// </summary>
+    public async Task PegarListaAsync(IReadOnlyList<string> rutas, bool cortar, string? soloDestino)
+    {
+        if (EnMarcha) { StatusLine = "ya hay una operacion en marcha"; return; }
+
+        var validas = rutas.Where(p => File.Exists(p) || Directory.Exists(p)).ToList();
+        if (validas.Count == 0) { StatusLine = "no hay ficheros que pegar"; return; }
+
+        var (entradas, raiz) = EntradasDe(validas);
+        if (entradas.Count == 0) { StatusLine = "no hay ficheros que pegar"; return; }
+
+        var marcados = soloDestino is not null
+            ? Devices.Where(x => string.Equals(x.Info.Root, soloDestino, StringComparison.OrdinalIgnoreCase)).ToList()
+            : Devices.Where(x => x.Marked && x.Info.IsReady).ToList();
+
+        List<Destino> destinos;
+        if (soloDestino is not null && marcados.Count == 0)
+        {
+            StatusLine = "ese destino ya no esta conectado";
+            return;
+        }
+
+        if (marcados.Count > 0)
+        {
+            destinos = marcados.Select(d => new Destino
+            {
+                Raiz = d.Info.Root,
+                Etiqueta = d.Label,
+                Info = d.Info,
+                Estructura = StructureMode.PorCarpetaOrigen
+            }).ToList();
+        }
+        else
+        {
+            // Sin marcados: se pega a la carpeta abierta en el explorador (§2.1).
+            var carpeta = Origen?.Path;
+            if (carpeta is null || !Directory.Exists(carpeta))
+            {
+                StatusLine = "marca un destino o abre una carpeta en el explorador";
+                return;
+            }
+            destinos = new List<Destino>
+            {
+                new Destino { Raiz = carpeta, Etiqueta = carpeta, Estructura = StructureMode.PorCarpetaOrigen }
+            };
+        }
+
+        var opciones = new CopyOptions
+        {
+            Move = cortar,
+            Verify = true,
+            CopyTimestamps = true,
+            CopyAttributes = true,
+            Conflict = Conflict.SaltarSiIgual,
+            Structure = StructureMode.PorCarpetaOrigen
+        };
+        var motor = new CopyEngine(opciones);
+
+        EnMarcha = true;
+        _cts = new CancellationTokenSource();
+        var token = _cts.Token;
+        Raise(nameof(EnMarcha));
+        Raise(nameof(PuedeRefrescar));
+
+        try
+        {
+            var total = entradas.Sum(f => f.Length);
+            _ultimosFicheros = entradas;
+            _ultimosDestinos = destinos;
+            _ultimasOpciones = opciones;
+
+            foreach (var d in marcados) d.PrepararCopia(total);
+            var porRaiz = new Dictionary<string, DeviceViewModel>(StringComparer.OrdinalIgnoreCase);
+            foreach (var d in marcados) porRaiz[d.Info.Root] = d;
+
+            var reloj = Stopwatch.StartNew();
+            var progreso = new Progress<CopyProgress>(p =>
+            {
+                GeneralPercent = p.Percent;
+                Ficheros = p.FilesDone;
+                Bytes = p.BytesDone;
+                Restante = p.Restante(reloj.Elapsed.TotalSeconds);
+                if (p.FicheroActual.Length > 0)
+                    StatusLine = (cortar ? "moviendo " : "pegando ") + p.FicheroActual;
+            });
+
+            var resultado = await motor.CopiarAsync(
+                entradas, destinos, progreso,
+                avanceDestino: (raizDestino, bytes) => Dispatcher.UIThread.Post(() =>
+                {
+                    if (porRaiz.TryGetValue(raizDestino, out var vm)) vm.SumarBytes(bytes);
+                }),
+                ct: token);
+
+            UltimoResultado = resultado;
+            global::QbaswingMultiTask.Stats.StatsStore.Anadir(resultado, raiz, cortar ? "mover" : "pegar");
+            Stats.Refrescar();
+            Errores.Refrescar();
+
+            foreach (var d in marcados) d.CopyActive = false;
+            StatusLine = resultado.Success
+                ? $"{(cortar ? "movido" : "pegado")}: {Human.Numero(resultado.FilesCopied)} fichero(s) · {Human.Size(resultado.BytesCopied)}"
+                : $"{(cortar ? "el mover" : "el pegado")} termino con {resultado.Errors.Count} problema(s)";
+        }
+        catch (OperationCanceledException) { StatusLine = "pegado cancelado"; }
+        catch (Exception ex) { StatusLine = "el pegado fallo: " + CopyEngine.Motivo(ex); }
+        finally
+        {
+            _cts?.Dispose();
+            _cts = null;
+            EnMarcha = false;
+            Raise(nameof(EnMarcha));
+            Raise(nameof(PuedeRefrescar));
+        }
+    }
+
+    /// <summary>Convierte rutas sueltas (ficheros o carpetas) en FileEntry con su ruta relativa.</summary>
+    private static (List<FileEntry> entradas, string raiz) EntradasDe(IReadOnlyList<string> rutas)
+    {
+        var padres = new List<string>();
+        var ficheros = new List<string>();
+        foreach (var r in rutas)
+        {
+            if (Directory.Exists(r))
+            {
+                padres.Add(Path.GetDirectoryName(r.TrimEnd('\\', '/')) ?? r);
+                ficheros.AddRange(Directory.EnumerateFiles(r, "*", SearchOption.AllDirectories));
+            }
+            else
+            {
+                padres.Add(Path.GetDirectoryName(r) ?? "");
+                ficheros.Add(r);
+            }
+        }
+
+        var raiz = RaizComun(padres);
+        var entradas = new List<FileEntry>();
+        foreach (var f in ficheros)
+        {
+            try
+            {
+                var info = new FileInfo(f);
+                var rel = raiz.Length > 0 && f.StartsWith(raiz, StringComparison.OrdinalIgnoreCase)
+                    ? Path.GetRelativePath(raiz, f)
+                    : Path.GetFileName(f);
+                entradas.Add(new FileEntry
+                {
+                    FullPath = f,
+                    RelativePath = rel,
+                    Length = info.Length,
+                    LastWriteUtc = info.LastWriteTimeUtc,
+                    CreationUtc = info.CreationTimeUtc,
+                    Attributes = info.Attributes
+                });
+            }
+            catch { }
+        }
+        return (entradas, raiz);
+    }
+
+    /// <summary>Prefijo comun mas largo de una lista de carpetas.</summary>
+    private static string RaizComun(IReadOnlyList<string> rutas)
+    {
+        if (rutas.Count == 0) return "";
+        var raiz = rutas[0];
+        foreach (var r in rutas)
+        {
+            while (raiz.Length > 0 && !r.StartsWith(raiz, StringComparison.OrdinalIgnoreCase))
+            {
+                var corte = raiz.TrimEnd('\\', '/').LastIndexOfAny(new[] { '\\', '/' });
+                raiz = corte < 0 ? "" : raiz[..corte];
+            }
+        }
+        return raiz;
     }
 }

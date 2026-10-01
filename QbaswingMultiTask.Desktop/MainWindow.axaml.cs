@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -6,6 +7,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Platform.Storage;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using QbaswingMultiTask.App;
@@ -246,6 +248,17 @@ public partial class MainWindow : Window
     {
         var ctrl = e.KeyModifiers == KeyModifiers.Control;
 
+        // Si se esta escribiendo en un cuadro de texto, Ctrl+C/X/V son de texto.
+        var escribiendo = FocusManager?.GetFocusedElement() is TextBox;
+
+        // Pestana Copiar/Mover (§2.1): portapapeles real de Windows.
+        if (Pestanas.SelectedIndex == 0 && ctrl && !escribiendo)
+        {
+            if (e.Key == Key.C) { _ = Vm.CopiarAlPortapapelesAsync(false); e.Handled = true; return; }
+            if (e.Key == Key.X) { _ = Vm.CopiarAlPortapapelesAsync(true); e.Handled = true; return; }
+            if (e.Key == Key.V) { _ = Vm.PegarAsync(); e.Handled = true; return; }
+        }
+
         // Pestana Sincronizador (§2.2): las teclas del M2.
         // Ctrl+A alinear · Ctrl+S revisar · Ctrl+U/E/T desalinear · Entrar aplicar.
         if (Pestanas.SelectedIndex == 1 && Vm.Ajustes.TeclasM2)
@@ -270,5 +283,40 @@ public partial class MainWindow : Window
 
         if (ctrl && e.Key == Key.R) { Refrescar(); e.Handled = true; return; }
         if (ctrl && e.Key == Key.A) { OnTodo(this, new RoutedEventArgs()); e.Handled = true; }
+    }
+
+    // ---------- arrastrar y soltar sobre un rectangulo: cajas (§2.1 y §3) ----------
+
+    private static List<string> RutasDe(IDataObject data)
+    {
+        var res = new List<string>();
+        try
+        {
+            if (!data.Contains(DataFormats.Files)) return res;
+            foreach (var item in data.GetFiles() ?? Enumerable.Empty<IStorageItem>())
+            {
+                var p = item.TryGetLocalPath();
+                if (!string.IsNullOrEmpty(p)) res.Add(p);
+            }
+        }
+        catch { }
+        return res;
+    }
+
+    private void OnDiscoDragOver(object? sender, DragEventArgs e)
+    {
+        e.DragEffects = e.Data.Contains(DataFormats.Files) ? DragDropEffects.Copy : DragDropEffects.None;
+        e.Handled = true;
+    }
+
+    private async void OnDiscoDrop(object? sender, DragEventArgs e)
+    {
+        if (sender is not Control { DataContext: DeviceViewModel d }) return;
+        var rutas = RutasDe(e.Data);
+        if (rutas.Count == 0) return;
+        e.Handled = true;
+        // Una caja: esto va SOLO a este rectangulo, no a todos los marcados.
+        Vm.StatusLine = $"caja: {rutas.Count} elemento(s) van solo a {d.Label}";
+        await Vm.PegarListaAsync(rutas, cortar: false, soloDestino: d.Info.Root);
     }
 }

@@ -60,24 +60,64 @@ reales, errores con reintento, perfiles y ajustes. Entrega en ZIP con instalador
 | `Desktop/MainWindow.axaml` | Comentarios XML con `---` dentro: **XML inválido**, error `AVLN1001`. | Comentarios reescritos. |
 | Avalonia 11.3.5 | La plantilla genera 12.1.3, que no se puede restaurar aquí (red a ~70 KB/s). | Fijado a 11.3.5, que sí está en `paquetes\`. |
 
-**Aviso de verificación:** la apariencia solo se ha comprobado leyendo el XAML
-y los recursos. **No se ha mirado una captura de la ventana**, así que de cómo
-se ve de verdad no se puede dar fe todavía. Falta captura y revisión visual.
+**Aviso de verificación (actualizado):** la apariencia se comprueba leyendo el
+XAML y los recursos, y **arrancando la aplicación** en este PC. Se han guardado
+capturas (`%TEMP%\opencode\captura-f2.png`, `captura-f4.png`) para que el autor
+las vea; el modelo que escribe este archivo **no puede ver imágenes**, así que
+las capturas son para revisión humana.
+
+### 2026-10-01 (2.ª parte) — pestañas F3 a F9
+
+**Hecho y comprobado (compila con 0 avisos y 0 errores; app arrancada):**
+- Las 7 pestañas existen y cada una tiene su vista y su ViewModel: Copiar/Mover,
+  Sincronizador, Escáner, Estadísticas, Errores, Perfiles, Ajustes.
+- **F3 portapapeles real de Windows** (`Desktop/Platform/WindowsClipboard.cs`,
+  P/Invoke `CF_HDROP` + `Preferred DropEffect`): Ctrl+C copia, Ctrl+X corta,
+  Ctrl+V pega. Comprobado con una prueba aislada: se escriben 2 rutas con efecto
+  «cortar» y se leen de vuelta idénticas.
+  - Con rectángulos marcados → **multipaste a todos**.
+  - Sin marcados → pega a la carpeta abierta en el explorador.
+  - Cortar + pegar = **mover** (el motor no borra el origen hasta cuadrar hash).
+  - **Cajas (§3):** soltar ficheros de Windows sobre un rectángulo los manda
+    **solo a ese** destino.
+  - Falta: arrastrar **hacia fuera** (del programa al Explorador).
+- **F4 Sincronizador:** dos paneles con su raíz, mini-discos, árbol, marcas
+  `✓/●/=`, umbral y atajos M2 (`Ctrl+A/S/U/E/T`, `Entrar`). Corregido: el panel
+  derecho se quedaba vacío cuando solo había una unidad lista; ahora siempre
+  muestra una raíz.
+- **F5 Errores:** lista con causa, **reintentar solo lo fallido**, descartar,
+  CSV y PDF. `MainViewModel` guarda el último plan para poder reintentarlo.
+- **F6 Escáner:** índice real, duplicados por hash, faltantes A→B, búsqueda por
+  comodín, CSV y PDF.
+- **F7 Estadísticas:** tarjetas con datos **reales** del motor y gráfica vectorial
+  por día (controles, no imagen), tabla, filtro y CSV/PDF.
+- **F8 Perfiles:** alta/edición/duplicar/borrar/exportar/importar y **aplicar al
+  Copiar/Mover** (origen, destinos, estructura, fechas).
+- **F9 Ajustes:** vista completa con guardado real y aplicación del tema al
+  arrancar. **Pendiente:** que el tema claro repinte (hoy los colores son fijos
+  en oscuro).
+
+**Errores encontrados y corregidos en esta parte:**
+| Dónde | Fallo | Corrección |
+|---|---|---|
+| `ViewModels/ErroresViewModel.cs` | Se llamaba `Avisar()` como si fuera del VM; es de cada `RelayCommand`. No compilaba. | Método `Notificar()` que avisa a los 5 comandos. |
+| `ViewModels/SincronizadorViewModel.cs` | El panel derecho no mostraba raíz si solo había una unidad lista. | El derecho usa la misma raíz que el izquierdo si no hay segunda. |
+| `MainWindow.axaml.cs` | `DataContext` nulo daba aviso `CS8600/CS8603`. | `(MainViewModel)DataContext!`. |
 
 ## Fases (orden de `PLAN.md` §5)
 
 | Fase | Descripción | Estado |
 |------|-------------|--------|
 | F0 | Renombre a QbaswingMultiTask + solución de 5 proyectos | **HECHO** — los 5 compilan |
-| F1 | Motor: timestamps/atributos, espacio libre, multihilo, lentitud USB, zero-kb, `indexPercent`, estadísticas reales, limpieza, comodines, tiempo restante | PENDIENTE — reescritura desde cero |
-| F2 | Dispositivos: expulsar, formatear, velocidad, estructura por tipo, red | PENDIENTE — ya existe la lectura automática (parte de F3) |
-| F3 | GUI principal: 7 pestañas, explorador, rectángulos ☑, barras, arrastre, portapapeles, multipaste | EN CURSO — Copiar/Mover a medias |
-| F4 | Sincronizador Total Commander: dos paneles, mini-discos, árbol, `✓/●/=`, teclas M2, revisar/aplicar | PENDIENTE |
-| F5 | Errores + cola persistente + reintento de lo fallado + cancelar en curso | PENDIENTE |
-| F6 | Escáner en GUI: duplicados/faltantes/buscar + exportar + Ctrl+G | PENDIENTE |
-| F7 | Estadísticas reales + resumen + PDF + gráfica por día | PENDIENTE |
-| F8 | Perfiles + horario + expresiones + índice automático | PENDIENTE |
-| F9 | Ajustes: tema, letra, idioma, estructura, exclusiones | PENDIENTE |
+| F1 | Motor: timestamps/atributos, espacio libre, multihilo, lentitud USB, zero-kb, `indexPercent`, estadísticas reales, limpieza, comodines, tiempo restante | **HECHO** — probado con arnés (`motor`) y usado por la GUI |
+| F2 | Dispositivos: expulsar, formatear, velocidad, estructura por tipo, red | **HECHO** — CLI (`listar/copiar/mover/expulsar/formatear`) y GUI |
+| F3 | GUI principal: 7 pestañas, explorador, rectángulos ☑, barras, arrastre, portapapeles, multipaste | **EN CURSO** — portapapeles real CF_HDROP (Ctrl+C/X/V), pegado a marcados o a la carpeta abierta, y cajas (soltar sobre un rectángulo). Falta arrastrar **hacia fuera** (a Explorer) |
+| F4 | Sincronizador Total Commander: dos paneles, mini-discos, árbol, `✓/●/=`, teclas M2, revisar/aplicar | **HECHO** — dos paneles con raíz, marcas y atajos M2 |
+| F5 | Errores + cola persistente + reintento de lo fallado + cancelar en curso | **HECHO (GUI)** — centro de errores con reintento de solo lo fallido, descartar y CSV/PDF. Falta persistir la cola entre sesiones |
+| F6 | Escáner en GUI: duplicados/faltantes/buscar + exportar + Ctrl+G | **HECHO (GUI)** — índice real, duplicados por hash, faltantes A→B, búsqueda, CSV/PDF |
+| F7 | Estadísticas reales + resumen + PDF + gráfica por día | **HECHO (GUI)** — tarjetas reales, tabla, gráfica vectorial por día, filtro, CSV/PDF |
+| F8 | Perfiles + horario + expresiones + índice automático | **HECHO (GUI)** — alta/edición/duplicar/borrar/exportar/importar y **aplicar al Copiar/Mover**; horario por hora/días o al insertar |
+| F9 | Ajustes: tema, letra, idioma, estructura, exclusiones | **PARCIAL** — vista completa y guardado real. El tema claro **aún no repinta** los colores (fijos en oscuro); falta `ThemeDictionaries` |
 | F10 | Cierre: README + ZIP completo + instalador | PENDIENTE |
 
 ## Decisiones que se apartan de `PLAN.md` a propósito
@@ -87,6 +127,13 @@ se ve de verdad no se puede dar fe todavía. Falta captura y revisión visual.
   cumple en `Desktop/MainWindow.axaml` con un `WrapPanel` de ancho fijo por hueco.
 - **Avalonia 11.3.5** en lugar de la 12.1.3 de la plantilla: es la versión
   disponible en la carpeta local `paquetes\` y aquí la red no da para más.
+- **Índice y estadísticas en JSONL, no SQLite.** §3 y §5 mencionan SQLite
+  (`Índice SQLite incremental`, `Estadísticas SQLite`), pero aquí no se puede
+  restaurar el paquete de SQLite con la red disponible. Se guardan en JSONL en
+  `%AppData%\QbaswingMultiTask\` (`stats\estadisticas.jsonl`,
+  `indice\indice.jsonl`) y las estadísticas usan **datos reales** del motor, no
+  simulados. Desviación consciente y reversible: la interfaz `StatsStore` /
+  `IndexStore` es la misma.
 
 ## Reglas de trabajo
 
