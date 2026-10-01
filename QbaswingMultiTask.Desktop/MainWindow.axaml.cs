@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -318,5 +319,40 @@ public partial class MainWindow : Window
         // Una caja: esto va SOLO a este rectangulo, no a todos los marcados.
         Vm.StatusLine = $"caja: {rutas.Count} elemento(s) van solo a {d.Label}";
         await Vm.PegarListaAsync(rutas, cortar: false, soloDestino: d.Info.Root);
+    }
+
+    // ---------- arrastrar hacia fuera: del explorador al Escritorio/Explorador ----------
+
+    private Point _arrastreInicio;
+    private bool _arrastrePosible;
+
+    private void OnExploradorPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) { _arrastrePosible = false; return; }
+        _arrastreInicio = e.GetPosition(this);
+        _arrastrePosible = true;
+    }
+
+    private async void OnExploradorMoved(object? sender, PointerEventArgs e)
+    {
+        if (!_arrastrePosible) return;
+        if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) { _arrastrePosible = false; return; }
+
+        var p = e.GetPosition(this);
+        if (Math.Abs(p.X - _arrastreInicio.X) < 6 && Math.Abs(p.Y - _arrastreInicio.Y) < 6) return;
+        _arrastrePosible = false;
+
+        // Sacar del programa SOLO la carpeta de origen elegida. El Explorador de
+        // Windows decide si copia o mueve segun las teclas; aqui se permite todo.
+        if (!Vm.HayOrigen) return;
+
+        IStorageFolder? carpeta;
+        try { carpeta = await StorageProvider.TryGetFolderFromPathAsync(new Uri(Vm.Origen!.Path)); }
+        catch { return; }
+        if (carpeta is null) return;
+
+        var datos = new DataObject();
+        datos.Set(DataFormats.Files, new IStorageItem[] { carpeta });
+        await DragDrop.DoDragDrop(e, datos, DragDropEffects.Copy | DragDropEffects.Move);
     }
 }
